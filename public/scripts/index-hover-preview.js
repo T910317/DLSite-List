@@ -8,6 +8,7 @@
     const SHOW_DELAY_MS = 300;
     const SLIDE_INTERVAL_MS = 1500;
     const CACHE_LIMIT = 50;
+    const IMAGE_CHECK_LIMIT = 500;
     const TRIGGER_SELECTOR = '[data-index-hover-preview]';
     const TOGGLE_SELECTOR = '[data-index-hover-preview-toggle]';
 
@@ -17,6 +18,8 @@
     const cache = new Map();
     // Sample images that failed once are skipped for the rest of the page lifetime.
     const failedImages = new Set();
+    // One load check per sample image URL, shared by the image count and the slideshow.
+    const imageChecks = new Map();
 
     let active = null;
     let showTimer = null;
@@ -100,24 +103,26 @@
             return;
         }
 
-        const anchor = (active.cover ?? active.toggle).getBoundingClientRect();
-        const gap = 12;
+        const trigger = active.cover ?? active.toggle;
+        const anchor = trigger.getBoundingClientRect();
+        const row = trigger.closest('tr')?.getBoundingClientRect() ?? anchor;
+        const gap = 8;
         const margin = 16;
         const width = element.offsetWidth;
         const height = element.offsetHeight;
         const viewportWidth = document.documentElement.clientWidth;
         const viewportHeight = window.innerHeight;
 
-        let left = anchor.right + gap;
-        let top = anchor.top;
+        const left = Math.max(margin, Math.min(anchor.left, viewportWidth - margin - width));
+        let top;
 
-        if (left + width > viewportWidth - margin) {
-            left = anchor.left - gap - width;
-        }
-
-        if (left < margin) {
-            // Narrow screens: put the card under the cover instead of beside it.
-            left = Math.max(margin, Math.min(anchor.left, viewportWidth - margin - width));
+        // Keep the hovered row readable: open below it, or above it when there is no room below.
+        if (row.bottom + gap + height <= viewportHeight - margin) {
+            top = row.bottom + gap;
+        } else if (row.top - gap - height >= margin) {
+            top = row.top - gap - height;
+        } else {
+            // Tall card-style rows on narrow screens: stay right under the cover.
             top = anchor.bottom + gap;
         }
 
@@ -214,16 +219,57 @@
 
         children.push(details);
 
-        if (data.images?.length) {
-            const images = document.createElement('p');
-            images.className = 'index-hover-preview__meta';
-            images.textContent = label('labelImages').replace(':count', data.images.length);
-            children.push(images);
-        }
-
         element.replaceChildren(...children);
         element.hidden = false;
         position();
+    };
+
+    const renderImageCount = (count) => {
+        const element = card();
+
+        if (!element || count === 0) {
+            return;
+        }
+
+        const images = document.createElement('p');
+        images.className = 'index-hover-preview__meta';
+        images.textContent = label('labelImages').replace(':count', count);
+
+        element.append(images);
+        position();
+    };
+
+    const checkImage = (source) => {
+        if (failedImages.has(source)) {
+            return Promise.resolve(false);
+        }
+
+        if (!imageChecks.has(source)) {
+            if (imageChecks.size >= IMAGE_CHECK_LIMIT) {
+                imageChecks.delete(imageChecks.keys().next().value);
+            }
+
+            imageChecks.set(source, new Promise((resolve) => {
+                const loader = new Image();
+
+                loader.addEventListener('load', () => resolve(true), { once: true });
+                loader.addEventListener('error', () => {
+                    failedImages.add(source);
+                    resolve(false);
+                }, { once: true });
+
+                loader.src = source;
+            }));
+        }
+
+        return imageChecks.get(source);
+    };
+
+    // Only images that actually load are counted and cycled; broken ones are dropped up front.
+    const loadableImages = async (images) => {
+        const results = await Promise.all(images.map(checkImage));
+
+        return images.filter((source, index) => results[index]);
     };
 
     const playSlides = (cover, images, current) => {
@@ -314,8 +360,20 @@
 
         renderPreview(data);
 
-        if (cover && Array.isArray(data.images) && data.images.length > 0) {
-            playSlides(cover, data.images, null);
+        if (!Array.isArray(data.images) || data.images.length === 0) {
+            return;
+        }
+
+        const images = await loadableImages(data.images);
+
+        if (showToken !== token) {
+            return;
+        }
+
+        renderImageCount(images.length);
+
+        if (cover && images.length > 0) {
+            playSlides(cover, images, null);
         }
     };
 
