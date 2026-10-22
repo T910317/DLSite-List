@@ -909,5 +909,20 @@
     "Waiting for approval": "確認待ち",
     "Applying reviewed changes": "確認済みの変更を適用中",
     "Review results": "レビュー結果",
-    "Group order and missing groups": "グループ順序と不足しているグループ"
+    "Group order and missing groups": "グループ順序と不足しているグループ",
+    "Hover Preview": "ホバープレビュー",
+    "Choose whether resting on a cover shows a quick preview from saved data.": "カバーにカーソルを置いたとき、保存済みのデータで簡易プレビューを表示するか選択します。",
+    "Show work details and sample images when hovering a cover": "カバーにカーソルを置くと作品情報とサンプル画像を表示する",
+    "When enabled, resting on an Index cover shows saved work details and cycles through saved sample images. Clicking the cover still works as before.": "有効にすると、一覧のカバーにカーソルを置いたときに保存済みの作品情報を表示し、保存済みのサンプル画像を順番に表示します。カバーをクリックしたときの動作は変わりません。",
+    "Save hover preview setting": "ホバープレビュー設定を保存",
+    "Hover preview setting saved.": "ホバープレビュー設定を保存しました。",
+    "Hover preview setting reset to default.": "ホバープレビュー設定を初期設定に戻しました。",
+    "Reset this hover preview setting to its default?": "このホバープレビュー設定を初期設定に戻しますか？",
+    "Show work preview for :title": ":title の作品プレビューを表示",
+    "Work code": "作品コード",
+    "Circle / Brand": "サークル／ブランド",
+    "Summary": "あらすじ",
+    "Sample images: :count": "サンプル画像：:count 枚",
+    "Loading preview...": "プレビューを読み込んでいます...",
+    "The preview could not be loaded.": "プレビューを読み込めませんでした。"
 }

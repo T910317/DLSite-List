@@ -12,6 +12,7 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Support\ContentTerminology;
 use App\Support\ProductFieldLayout;
+use App\Support\ProductHoverPreview;
 use App\Support\ProductIndexFilters;
 use App\Support\ProductIndexResults;
 use App\Support\ProductIndexRowBuilder;
@@ -188,6 +189,8 @@ class ProductIndex extends Component
         $tagLinkQuery = $filters->toQueryWithout('genre');
         $imageViewerEnabled = $settings->indexImageViewerEnabled
             && in_array(ProductField::Image->value, $settings->visibleIndexFields, true);
+        $hoverPreviewEnabled = $settings->indexHoverPreviewEnabled
+            && in_array(ProductField::Image->value, $settings->visibleIndexFields, true);
         $productRows = app(ProductIndexRowBuilder::class)->build(
             $visibleProducts,
             $productContributors,
@@ -230,6 +233,7 @@ class ProductIndex extends Component
             'productFormModalEnabled' => $settings->productFormModalEnabled,
             'productFormModalCompletionAction' => $settings->productFormModalCompletionAction,
             'imageViewerEnabled' => $imageViewerEnabled,
+            'hoverPreviewEnabled' => $hoverPreviewEnabled,
             'sortIcons' => $this->sortIcons($filters),
             'tableWidthCss' => $settings->tableWidthCss,
         ]);
@@ -256,6 +260,21 @@ class ProductIndex extends Component
                 ...($product->sample_images ?? []),
             ], fn(?string $path): bool => filled($path))),
         );
+    }
+
+    /**
+     * Saved details for the cover hover card; loaded per hovered work instead of per listed row.
+     *
+     * @return array<string, mixed>
+     */
+    #[Json]
+    public function hoverPreview(string $productId): array
+    {
+        $settings = Option::productIndexSettings();
+
+        abort_unless($settings->indexHoverPreviewEnabled, 404);
+
+        return app(ProductHoverPreview::class)->build($productId, $settings);
     }
 
     public function applyFilters(): void

@@ -123,6 +123,16 @@
                     <livewire:index-image-viewer-settings />
 
                     <h2>
+                        <i class="fa-solid fa-hand-pointer fa-fw options-section-icon" aria-hidden="true"></i>
+                        {{ __('Hover Preview') }}
+                    </h2>
+                    <p class="option-description">
+                        {{ __('Choose whether resting on a cover shows a quick preview from saved data.') }}
+                    </p>
+
+                    <livewire:index-hover-preview-settings />
+
+                    <h2>
                         <i class="fa-solid fa-arrows-left-right fa-fw options-section-icon" aria-hidden="true"></i>
                         {{ __('Index Table Width') }}
                     </h2>

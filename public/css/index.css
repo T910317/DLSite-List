@@ -622,6 +622,132 @@ body.filter-modal-open {
     border-color: transparent;
 }
 
+/* Cover hover preview */
+.list-table .list-table-data .data.image [data-index-hover-preview] {
+    position: relative;
+    vertical-align: middle;
+}
+
+.index-hover-preview-slide {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--image-viewer-panel-border, #EE9898);
+    background: var(--image-viewer-panel-bg, #FFFDF8);
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.index-hover-preview-toggle {
+    display: none;
+    margin: 4px auto 0;
+    padding: 2px 6px;
+    border: 1px solid var(--image-viewer-control-border, #EE9898);
+    border-radius: 999px;
+    background: var(--image-viewer-control-bg, #FFFDF8);
+    color: var(--image-viewer-text, #7D6A6A);
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.index-hover-preview-toggle:focus-visible {
+    outline: 3px solid var(--image-viewer-focus, #7D6A6A);
+    outline-offset: 2px;
+}
+
+/* Touch screens cannot hover, so they get a small info button under the cover instead. */
+@media (hover: none) {
+    .index-hover-preview-toggle {
+        display: block;
+    }
+}
+
+.index-hover-preview {
+    position: fixed;
+    z-index: 1000;
+    box-sizing: border-box;
+    width: min(340px, calc(100vw - 32px));
+    max-height: min(420px, calc(100vh - 32px));
+    overflow: hidden;
+    padding: 12px 14px;
+    border: 1px solid var(--image-viewer-panel-border, #EE9898);
+    border-radius: 8px;
+    background: var(--image-viewer-panel-bg, #FFFDF8);
+    box-shadow: var(--image-viewer-shadow, 0 18px 50px rgba(37, 23, 27, 0.35));
+    color: var(--image-viewer-text, #7D6A6A);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: left;
+    pointer-events: none;
+}
+
+.index-hover-preview[hidden] {
+    display: none;
+}
+
+.index-hover-preview__title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.index-hover-preview__subtitle {
+    margin: 2px 0 0;
+    opacity: .8;
+    overflow-wrap: anywhere;
+}
+
+.index-hover-preview__details {
+    margin: 8px 0 0;
+}
+
+.index-hover-preview__section {
+    display: grid;
+    grid-template-columns: 7.5em 1fr;
+    gap: 8px;
+    padding: 3px 0;
+}
+
+.index-hover-preview__section dt {
+    font-weight: bold;
+}
+
+.index-hover-preview__section dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.index-hover-preview__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 4.6em;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+}
+
+.index-hover-preview__chips li {
+    padding: 0 6px;
+    border: 1px solid var(--image-viewer-control-border, #EE9898);
+    border-radius: 999px;
+}
+
+.index-hover-preview__meta,
+.index-hover-preview__status {
+    margin: 8px 0 0;
+    opacity: .8;
+}
+
+.index-hover-preview__status {
+    margin: 0;
+}
+
 [x-cloak] {
     display: none !important;
 }
