@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+* Added an optional Index Hover Preview that opens a large view of the saved cover, sample images, and work details when resting on a cover; the mouse wheel changes images.
+
 ## 2.1.0 - 2026-10-22
 
 *Traditional Chinese Support & Security Update*

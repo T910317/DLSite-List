@@ -131,7 +131,8 @@
                                                         data-index-image-viewer-product="{{ $product->id }}"
                                                         data-index-image-viewer-title="{{ $product->id }} - {{ $product->workName }}"
                                                         aria-label="{{ __('View saved images for :title', ['title' => $product->workName]) }}"
-                                                        aria-haspopup="dialog" aria-controls="index-image-viewer-dialog">
+                                                        aria-haspopup="dialog" aria-controls="index-image-viewer-dialog"
+                                                        @if ($hoverPreviewEnabled) data-index-hover-preview="{{ $product->id }}" @endif>
                                                         @if ($product->workImage)
                                                             <img src="{{ $product->workImage }}" class="image" loading="lazy"
                                                                 onload="this.parentElement.classList.add('is-loaded')"
@@ -146,7 +147,8 @@
                                                     </button>
                                                 @else
                                                     <a href="{{ $product->dlsiteWorkUrl }}"
-                                                        class="product-link index-cover-thumbnail" target="_blank">
+                                                        class="product-link index-cover-thumbnail" target="_blank"
+                                                        @if ($hoverPreviewEnabled) data-index-hover-preview="{{ $product->id }}" @endif>
                                                         @if ($product->workImage)
                                                             <img src="{{ $product->workImage }}" class="image" loading="lazy"
                                                                 onload="this.parentElement.classList.add('is-loaded')"
@@ -159,6 +161,14 @@
                                                             </div>
                                                         @endif
                                                     </a>
+                                                @endif
+                                                @if ($hoverPreviewEnabled)
+                                                    <button type="button" class="index-hover-preview-toggle"
+                                                        data-index-hover-preview-toggle="{{ $product->id }}"
+                                                        aria-label="{{ __('Show work preview for :title', ['title' => $product->workName]) }}"
+                                                        aria-expanded="false" aria-controls="index-hover-preview">
+                                                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                                    </button>
                                                 @endif
                                             @break
 
@@ -436,6 +446,25 @@
         </div>
         </div>
         </div>
+
+        @if ($hoverPreviewEnabled)
+            <div id="index-hover-preview" class="index-hover-preview" role="dialog" aria-modal="false"
+                aria-label="{{ __('Hover Preview') }}" hidden wire:ignore
+                data-label-code="{{ __('Work code') }}" data-label-makers="{{ __('Circle / Brand') }}"
+                data-label-formats="{{ __('Product Format') }}" data-label-tags="{{ __('Tags') }}"
+                data-label-description="{{ __('Summary') }}"
+                data-label-scroll="{{ __('Scroll to change images') }}"
+                data-label-previous="{{ __('Previous image') }}" data-label-next="{{ __('Next image') }}"
+                data-label-close="{{ __('Close') }}" data-label-no-image="{{ __('No image') }}"
+                data-label-loading="{{ __('Loading preview...') }}"
+                data-label-error="{{ __('The preview could not be loaded.') }}"></div>
+
+            @assets
+                <script
+                    src="{{ asset('scripts/index-hover-preview.js') }}?v={{ filemtime(public_path('scripts/index-hover-preview.js')) }}"
+                    defer></script>
+            @endassets
+        @endif
 
         @if ($imageViewerEnabled)
             <x-image-viewer-dialog />

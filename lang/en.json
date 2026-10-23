@@ -909,5 +909,20 @@
     "Waiting for approval": "Waiting for approval",
     "Applying reviewed changes": "Applying reviewed changes",
     "Review results": "Review results",
-    "Group order and missing groups": "Group order and missing groups"
+    "Group order and missing groups": "Group order and missing groups",
+    "Hover Preview": "Hover Preview",
+    "Choose whether resting on a cover shows a quick preview from saved data.": "Choose whether resting on a cover shows a quick preview from saved data.",
+    "Show work details and sample images when hovering a cover": "Show work details and sample images when hovering a cover",
+    "When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.": "When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.",
+    "Save hover preview setting": "Save hover preview setting",
+    "Hover preview setting saved.": "Hover preview setting saved.",
+    "Hover preview setting reset to default.": "Hover preview setting reset to default.",
+    "Reset this hover preview setting to its default?": "Reset this hover preview setting to its default?",
+    "Show work preview for :title": "Show work preview for :title",
+    "Work code": "Work code",
+    "Circle / Brand": "Circle / Brand",
+    "Summary": "Summary",
+    "Scroll to change images": "Scroll to change images",
+    "Loading preview...": "Loading preview...",
+    "The preview could not be loaded.": "The preview could not be loaded."
 }

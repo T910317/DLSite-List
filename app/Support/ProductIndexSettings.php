@@ -36,6 +36,7 @@ final readonly class ProductIndexSettings
         public array $contentOverflow,
         public bool $searchHiddenDescriptionsEnabled,
         public bool $indexImageViewerEnabled,
+        public bool $indexHoverPreviewEnabled,
         public array $optionalProductStatuses,
         public bool $indexGroupOrderingEnabled,
         public array $tagColorSurfaces,

@@ -34,11 +34,14 @@ Index state is kept in the query string so filtered/sorted views can be linked a
 - table width
 - content overflow
 - Image Viewer state
+- Hover Preview state
 - Add/Edit modal state
 - optional progress-status state
 - DLsite link behavior
 
 Tag and contributor data is loaded only when the current visible fields need it.
+
+Hover Preview data is not loaded with the table. When a cover is hovered or focused, `ProductIndex::hoverPreview()` returns one work's saved details through `ProductHoverPreview`, independently of which Index fields are visible.
 
 ### Quick Add from DLsite
 
@@ -315,6 +318,7 @@ Settings components include:
 - `IndexPaginationSettings`
 - `IndexSearchSettings`
 - `IndexImageViewerSettings`
+- `IndexHoverPreviewSettings`
 - `IndexTableWidthSettings`
 - `IndexContentOverflowSettings`
 - `AutocompleteSettings`
