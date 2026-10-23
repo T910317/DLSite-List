@@ -426,7 +426,7 @@ class IndexHoverPreviewTest extends TestCase
             ->assertSee('data-label-description="簡介摘要"', false)
             ->assertSee('data-label-score="個人分數"', false)
             ->assertSee('data-label-dlsite-rating="DLsite 評價"', false)
-            ->assertSee('data-label-rating=":value / :max 分"', false)
+            ->assertSee('data-label-rating=":value 分（滿分 :max 分）"', false)
             ->assertSee('顯示 作品名稱不翻譯 的作品預覽', false);
 
         $this->get(route('options.index'))

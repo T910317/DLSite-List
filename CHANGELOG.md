@@ -11,6 +11,11 @@ All notable changes to this project are documented in this file.
 * Added links between other editions of a work (language editions, translations, and versions such as Windows/Mac) as reported by DLsite. The Edit page lists them, and adding a work shows a warning when another edition is already in your library. Saving is never blocked.
 * Added the DLsite average rating and rating count. They are saved when a work is added, kept current by Refetch, included in Import / Export, and shown read-only on the Edit page.
 * Hover Preview also shows the saved DLsite average rating as stars with its rating count, next to the own score.
+* The Index shows the DLsite rating and your own score as two rows of stars with their numbers, for example `DLsite ★★★★★ 4.96` and `Mine ★★★★½ 9`. A row is shown only when there is a value.
+
+### Changed
+
+* The Index `Score` column is now titled `Ratings` because it shows both ratings. It still sorts by your own score. On narrow screens, Ratings and Series each use a full row of the work card.
 
 ## 2.1.0 - 2026-10-22
 

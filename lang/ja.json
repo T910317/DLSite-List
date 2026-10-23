@@ -936,10 +936,13 @@
     "Translation": "翻訳版",
     "Other editions of this work are already in your library:": "ライブラリにはこの作品の別バージョンが既にあります:",
     "Not in your library": "ライブラリにありません",
-    ":value out of :max": ":max 点中 :value 点",
+    ":value out of :max": ":max点中:value点",
     "DLsite rating": "DLsite評価",
     "DLsite rating count": "DLsite評価数",
     "★:rating (:count rating)|★:rating (:count ratings)": "★:rating（:count件）|★:rating（:count件）",
     "(:count rating)|(:count ratings)": "（:count件）|（:count件）",
-    "My score": "自分の評価"
+    "My score": "自分の評価",
+    "Ratings": "評価",
+    "DLsite": "DLsite",
+    "Mine": "自分"
 }
