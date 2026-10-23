@@ -199,6 +199,7 @@
         return wrapper;
     };
 
+    // Same layout as My score: stars and the bare average (a 4.96 shows "4.96", no "/ 5"), plus the rating count.
     const renderDlsiteRating = (rating, countLabel) => {
         const wrapper = element('span', 'index-hover-preview__score');
         // As with the own score, the stars announce "4.53 out of 5" and the visible number is hidden from screen readers.
@@ -208,7 +209,7 @@
         wrapper.append(renderStars(rating, 5), number);
 
         if (countLabel) {
-            wrapper.append(element('span', 'index-hover-preview__score-label', countLabel));
+            wrapper.append(element('span', 'index-hover-preview__rating-count', countLabel));
         }
 
         return wrapper;

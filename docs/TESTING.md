@@ -708,7 +708,7 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 - Enable Hover Preview, rest on an Index cover, and confirm the large preview leaves a wide dimmed edge around it, shows the cover first and only the saved details that exist.
 - Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
 - Confirm a work scored 9 shows a "My score" row with 4.5 lit stars followed by "9" (no "/ 10" or score wording), and an unscored work shows no My score row.
-- Confirm a work with a DLsite rating of 4.53 from 123 ratings shows a DLsite rating row with about 4.5 lit stars, "4.53", and "(123 ratings)", and a work without a DLsite rating shows no such row.
+- Confirm a work with a DLsite rating of 4.53 from 123 ratings shows a DLsite rating row below My score with about 4.5 lit stars, "4.53" (no "/ 5"), and "(123 ratings)", and a work without a DLsite rating shows no such row.
 - Confirm moving the pointer onto the dimmed edge closes the preview.
 - Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.
 - Confirm a quick click on the cover still opens the Image Viewer or DLsite link.
