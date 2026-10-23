@@ -15,16 +15,11 @@ All notable changes to this project are documented in this file.
 * Added an optional Product Code column to the Index. When enabled in `Options -> Field Layouts -> Index Table Columns`, the code gets its own column linking to DLsite, Title shows only the title, and the Title header sorts by title. It is hidden by default, so the Index looks and sorts as before.
 * Added Title to the Index sort options. It is hidden from the sort menu by default.
 * Added an optional Edition Grouping setting that shows other editions of a work in your library as one Index row, with a "Multiple languages" (or "Multiple versions") badge that links to each edition. Search and filters still check every edition. It is disabled by default.
+* Added an `Adaptive column widths` switch to Index Table Width, off by default. When it is on, Wide, Full, and custom table widths give the extra room to the Title and Tags columns instead of only Title, the Index no longer makes the page scroll sideways, and wide tables stay clear of the floating side menu on large screens. With the switch off, the Index looks the same as before.
 
 ### Changed
 
 * The Index `Score` column is now titled `Ratings` because it shows both ratings. It still sorts by your own score. On narrow screens, Ratings and Series each use a full row of the work card.
-* Wide, Full, and custom Index table widths now give the extra room to the Title and Tags columns instead of only Title. Short columns keep their widths, and the Default width is unchanged.
-
-### Fixed
-
-* Fixed the Index making the page scroll sideways on narrow windows and with the Full table width.
-* Fixed wide Index tables running under the floating side menu on large screens.
 
 ### Security
 

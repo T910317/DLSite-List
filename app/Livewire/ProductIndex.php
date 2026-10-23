@@ -242,6 +242,7 @@ class ProductIndex extends Component
             'hoverPreviewEnabled' => $hoverPreviewEnabled,
             'sortIcons' => $this->sortIcons($filters),
             'tableWidthCss' => $settings->tableWidthCss,
+            'adaptiveColumnWidths' => $settings->adaptiveColumnWidthsEnabled,
         ]);
     }
 
