@@ -26,6 +26,10 @@ All notable changes to this project are documented in this file.
 * Fixed the Index making the page scroll sideways on narrow windows and with the Full table width.
 * Fixed wide Index tables running under the floating side menu on large screens.
 
+### Security
+
+* Restricted DLSite Create, Custom Create, and Bulk Import return navigation to same-site URLs.
+
 ## 2.1.0 - 2026-10-22
 
 *Traditional Chinese Support & Security Update*
