@@ -935,6 +935,7 @@ class Option extends Model
             indexColumns: $indexColumns,
             visibleIndexFields: array_column($indexColumns, 'field'),
             titleNotesVisible: ProductFieldLayout::indexTitleNotesVisible($indexFieldLayout),
+            titleShowsProductCode: ProductFieldLayout::indexTitleShowsProductCode($indexFieldLayout),
             filterFieldLayout: $filterFieldLayout,
             filterFields: ProductFieldLayout::filterFields($filterFieldLayout),
             indexSortFieldLayout: $indexSortFieldLayout,

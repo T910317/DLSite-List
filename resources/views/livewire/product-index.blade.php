@@ -162,16 +162,26 @@
                                                 @endif
                                             @break
 
-                                            @case('title')
+                                            @case('product_code')
                                                 <a href="{{ $product->dlsiteWorkUrl }}" class="product-link"
-                                                    target="_blank">{{ $product->id }} -
-                                                    {{ $product->workName }}</a>
+                                                    target="_blank">{{ $product->id }}</a>
+                                            @break
+
+                                            @case('title')
+                                                @if ($titleShowsProductCode)
+                                                    <a href="{{ $product->dlsiteWorkUrl }}" class="product-link"
+                                                        target="_blank">{{ $product->id }} -
+                                                        {{ $product->workName }}</a>
+                                                @else
+                                                    <a href="{{ $product->dlsiteWorkUrl }}" class="product-link"
+                                                        target="_blank">{{ $product->workName }}</a>
+                                                @endif
                                                 <div class="notes">
                                                     <div class="note-text">
                                                         @if ($product->workName != $product->workNameEnglish && $product->workNameEnglish)
                                                             <a href="{{ $product->dlsiteWorkUrl }}" class="product-link"
                                                                 target="_blank">
-                                                                {{ $product->id }} - {{ $product->workNameEnglish }}</a>
+                                                                {{ $titleShowsProductCode ? $product->id . ' - ' : '' }}{{ $product->workNameEnglish }}</a>
                                                         @endif
                                                     </div>
                                                 </div>

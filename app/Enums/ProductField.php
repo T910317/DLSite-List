@@ -93,7 +93,8 @@ enum ProductField: string
     public function sortField(): ?ProductIndexSortField
     {
         return match ($this) {
-            self::Title => ProductIndexSortField::Code,
+            self::ProductCode => ProductIndexSortField::Code,
+            self::Title => ProductIndexSortField::Title,
             self::Score => ProductIndexSortField::Score,
             self::Series => ProductIndexSortField::Series,
             self::AgeCategory => ProductIndexSortField::AgeCategory,
@@ -341,6 +342,7 @@ enum ProductField: string
             default => [
                 'fields' => [
                     self::Image,
+                    self::ProductCode,
                     self::Title,
                     self::Score,
                     self::Series,
@@ -371,6 +373,7 @@ enum ProductField: string
                 ],
                 'visibility_locked' => [self::Title],
                 'hidden_by_default' => [
+                    self::ProductCode,
                     ...self::metadataFields(),
                     self::MakerNames,
                     self::SiteId,
@@ -385,7 +388,7 @@ enum ProductField: string
                     self::UpdatedAt,
                 ],
                 'editable_by_default' => [],
-                'prefix_missing' => [self::Image, self::Title],
+                'prefix_missing' => [self::Image, self::ProductCode, self::Title],
             ],
         };
     }

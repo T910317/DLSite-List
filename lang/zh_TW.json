@@ -193,6 +193,7 @@
     "Added to the site Date": "加入收藏庫日期",
     "Updated Date": "更新日期",
     "Notes are already shown inside Title; enable this for a separate column.": "備註已顯示在標題欄內；啟用此項可另以獨立欄位顯示。",
+    "Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.": "以獨立欄位顯示作品代碼。開啟時，標題欄只顯示標題，點標題欄名會依標題排序。",
     "Notes below Title": "在標題下方顯示備註",
     "Shows each work's Notes beneath its title on the Index.": "在收藏列表的作品標題下方顯示該作品的備註。",
     "Asc": "升冪",

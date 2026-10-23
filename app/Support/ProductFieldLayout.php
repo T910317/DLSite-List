@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\ProductField;
+use App\Enums\ProductIndexSortField;
 use Illuminate\Support\Arr;
 
 final class ProductFieldLayout
@@ -220,11 +221,21 @@ final class ProductFieldLayout
      */
     public static function indexColumns(array $layout): array
     {
-        return collect(self::visibleRows($layout, self::SURFACE_INDEX))
-            ->map(fn(array $visibleRow): array => self::fieldMeta(
-                $visibleRow['field'],
-                self::SURFACE_INDEX,
-            ))
+        $visibleRows = self::visibleRows($layout, self::SURFACE_INDEX);
+        $titleShowsProductCode = ! collect($visibleRows)
+            ->contains(fn(array $visibleRow): bool => $visibleRow['field'] === ProductField::ProductCode);
+
+        return collect($visibleRows)
+            ->map(function (array $visibleRow) use ($titleShowsProductCode): array {
+                $meta = self::fieldMeta($visibleRow['field'], self::SURFACE_INDEX);
+
+                // Without its own column, the code stays in the Title cell, so the Title header keeps sorting by code.
+                if ($titleShowsProductCode && $visibleRow['field'] === ProductField::Title) {
+                    $meta['sort_field'] = ProductIndexSortField::Code->value;
+                }
+
+                return $meta;
+            })
             ->values()
             ->all();
     }
@@ -345,6 +356,13 @@ final class ProductFieldLayout
 
         return (bool) data_get($row, 'visible', false)
             && (bool) data_get($row, 'notes_visible', true);
+    }
+
+    public static function indexTitleShowsProductCode(array $layout): bool
+    {
+        $row = Arr::first($layout, fn(array $row): bool => $row['field'] === ProductField::ProductCode->value);
+
+        return ! (bool) data_get($row, 'visible', false);
     }
 
     /**

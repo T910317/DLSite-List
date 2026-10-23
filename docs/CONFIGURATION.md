@@ -689,6 +689,8 @@ Required fields remain visible.
 
 Index Title is locked visible but reorderable. Its independent `Notes below Title` switch is enabled by default.
 
+Index Product Code is hidden by default, so Title shows `product code - title` and its header sorts by product code. When `Product Code` is shown, the code gets its own column that links to DLsite, Title shows only the title, and the Title header sorts by title. Layouts saved before this column existed get the hidden `Product Code` row at the top, so enabling it places the column before Title.
+
 Index Tags has separate visibility switches for:
 - Custom Tags
 - selected-language Fetched Tags
@@ -702,6 +704,7 @@ Fetched Tags are readonly by default. If made editable, editing changes only the
 #### Index Table Columns Default Order
 
 - `image` - shown as `Cover Image` in Field Layout settings; the Index table column is `Image`.
+- `product_code` - hidden; when shown, Title omits the code and sorts by title
 - `title` - locked visible; Notes below Title enabled
 - `score`
 - `series`
@@ -763,6 +766,7 @@ Fetched Tags are readonly by default. If made editable, editing changes only the
 #### Index Sort Menu Default Order
 
 - `product_code`
+- `title` - hidden
 - `score`
 - `series`
 - `age_category`

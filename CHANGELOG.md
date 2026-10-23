@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+* Added an optional Product Code column to the Index. When enabled in `Options -> Field Layouts -> Index Table Columns`, the code gets its own column linking to DLsite, Title shows only the title, and the Title header sorts by title. It is hidden by default, so the Index looks and sorts as before.
+* Added Title to the Index sort options. It is hidden from the sort menu by default.
+
 ## 2.1.0 - 2026-10-22
 
 *Traditional Chinese Support & Security Update*
