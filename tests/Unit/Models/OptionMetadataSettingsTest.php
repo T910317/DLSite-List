@@ -514,6 +514,7 @@ class OptionMetadataSettingsTest extends TestCase
         $this->assertFalse($defaults->indexGroupOrderingEnabled);
         $this->assertFalse($defaults->searchHiddenDescriptionsEnabled);
         $this->assertFalse($defaults->indexImageViewerEnabled);
+        $this->assertFalse($defaults->indexGroupEditionsEnabled);
         $this->assertSame(Option::DEFAULT_OPTIONAL_PRODUCT_STATUSES, $defaults->optionalProductStatuses);
         $this->assertSame(Option::DEFAULT_TAG_COLOR_SURFACES, $defaults->tagColorSurfaces);
         $this->assertSame(ProductIndexContentOverflow::DEFAULTS, $defaults->contentOverflow);
@@ -559,6 +560,7 @@ class OptionMetadataSettingsTest extends TestCase
         Option::setTagLibraryIndexGroupOrderingEnabled(true);
         Option::setIndexSearchHiddenDescriptionsEnabled(true);
         Option::setIndexImageViewerEnabled(true);
+        Option::setIndexGroupEditionsEnabled(true);
         Option::setOptionalProductStatuses([
             'on_hold' => true,
             'dropped' => false,
@@ -596,6 +598,7 @@ class OptionMetadataSettingsTest extends TestCase
         $this->assertTrue($settings->indexGroupOrderingEnabled);
         $this->assertTrue($settings->searchHiddenDescriptionsEnabled);
         $this->assertTrue($settings->indexImageViewerEnabled);
+        $this->assertTrue($settings->indexGroupEditionsEnabled);
         $this->assertSame([
             'on_hold' => true,
             'dropped' => false,
@@ -662,6 +665,7 @@ class OptionMetadataSettingsTest extends TestCase
         Option::setTagLibraryIndexGroupOrderingEnabled(true);
         Option::setIndexSearchHiddenDescriptionsEnabled(true);
         Option::setIndexImageViewerEnabled(true);
+        Option::setIndexGroupEditionsEnabled(true);
         Option::setOptionalProductStatuses([
             'on_hold' => true,
             'dropped' => true,
@@ -688,6 +692,7 @@ class OptionMetadataSettingsTest extends TestCase
         $this->assertFalse(Option::tagLibraryIndexGroupOrderingEnabled());
         $this->assertFalse(Option::indexSearchHiddenDescriptionsEnabled());
         $this->assertFalse(Option::indexImageViewerEnabled());
+        $this->assertFalse(Option::indexGroupEditionsEnabled());
         $this->assertSame(Option::DEFAULT_OPTIONAL_PRODUCT_STATUSES, Option::optionalProductStatuses());
         $this->assertSame(Option::PRODUCT_FORM_THEME_BLACK, Option::productFormTheme());
         $this->assertFalse(Option::productFormModalEnabled());

@@ -35,6 +35,7 @@ Index state is kept in the query string so filtered/sorted views can be linked a
 - content overflow
 - Image Viewer state
 - Hover Preview state
+- Edition Grouping state
 - Add/Edit modal state
 - optional progress-status state
 - DLsite link behavior
@@ -63,6 +64,8 @@ The `score` column is titled `Ratings` on the Index. `ProductFieldLayout::label(
 DLsite links some works to other editions under different product codes: language editions, translations of an original, and versions such as Windows/Mac/Android. The scraper reads these links from DLsite's `product/info/ajax` (`translation_info`) and `api/=/product.json` (`language_editions`, `editions`) responses, because `dlsite-async` drops them, and adds them as `dlsite_editions`. `RelatedEditions` normalizes them into `products.related_editions` (`code`, `type`, `label`). `null` means the links were never fetched; `[]` means DLsite reported none. When the lookup fails, the scraper leaves `dlsite_editions` out so stored links are kept. Editions are not guessed from titles, so a version that the circle did not register on DLsite is not linked.
 
 Adding a work is never blocked. `RelatedEditions::inLibrary()` finds library works that the new work lists, works that list the new code, and works that share a listed edition (for example two translations of one original) in one JSON query. The Create page checks the typed code through `GET /related-editions` before saving; that check covers works already in the library that list the code. After a DLsite import, the full check, including the new work's own links, is shown on the Index (or the modal completion page, which then stays open). Bulk Import stores the warning on the item next to any image warning. The Edit page lists every edition, linking to the local work when it is in the library and to DLsite otherwise.
+
+When `Edition Grouping` is enabled, `EditionGroups::load()` reads the stored links once per Index render (one JSON query, plus one lookup per 1,000 linked codes to find which are in the library) and joins works that list each other or share a listed edition. `ProductIndexResults` applies search and filters first, then keeps one row per work: the original when it matches, otherwise the matching edition with the lowest product code. The other matching editions are excluded in SQL, so counts, pages, and `ReturnTarget` page and row positions stay consistent. The row badge is built from the same in-memory groups and adds no query per row.
 
 #### DLsite Rating
 
@@ -343,6 +346,7 @@ Settings components include:
 - `IndexSearchSettings`
 - `IndexImageViewerSettings`
 - `IndexHoverPreviewSettings`
+- `IndexEditionGroupingSettings`
 - `IndexTableWidthSettings`
 - `IndexContentOverflowSettings`
 - `AutocompleteSettings`
@@ -368,6 +372,7 @@ Index:
 - `ProductIndexRowBuilder`
 - `ProductIndexSettings`
 - `ProductIndexSort`
+- `EditionGroups`
 - `ReturnTarget`
 
 Fields/UI data:

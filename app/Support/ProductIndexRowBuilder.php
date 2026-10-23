@@ -24,6 +24,7 @@ final readonly class ProductIndexRowBuilder
         bool $ageAppropriateLinksEnabled,
         array $returnQuery,
         bool $announceLinksEnabled = true,
+        ?EditionGroups $editionGroups = null,
     ): Collection {
         $indexUrl = $this->url->route('index', absolute: false);
 
@@ -31,6 +32,7 @@ final readonly class ProductIndexRowBuilder
             $ageAppropriateLinksEnabled,
             $announceLinksEnabled,
             $contributorsByProductId,
+            $editionGroups,
             $indexUrl,
             $returnQuery,
         ): ProductIndexRow {
@@ -49,6 +51,7 @@ final readonly class ProductIndexRowBuilder
                 ->values()
                 ->all();
             $workImage = $attributes['work_image'] ?? null;
+            $editionGroup = $editionGroups?->display($id);
 
             return new ProductIndexRow(
                 id: $id,
@@ -96,6 +99,16 @@ final readonly class ProductIndexRowBuilder
                 brandUrl: blank($brand)
                     ? null
                     : $this->indexFilterUrl($indexUrl, 'brand', $brand),
+                editions: array_map(fn(array $edition): array => [
+                    ...$edition,
+                    'editUrl' => $this->url->route('products.edit', [
+                        'product' => $edition['code'],
+                        'return_query' => $returnQuery,
+                        'return_fragment' => $id,
+                    ], false),
+                    'current' => $edition['code'] === $id,
+                ], $editionGroup['editions'] ?? []),
+                editionsByLanguage: $editionGroup['languages'] ?? false,
             );
         });
     }

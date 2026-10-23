@@ -39,31 +39,38 @@ final readonly class ReturnTarget
         );
     }
 
+    /**
+     * $groupEditions defaults to the saved Index option. A caller that passes $perPage for a
+     * query without search supplies the whole Index policy, so editions stay ungrouped unless
+     * it passes $groupEditions too.
+     */
     public function forProduct(
         Product $product,
         ?ProductIndexResults $results = null,
         int|string|null $perPage = null,
         bool $visibilityMayHaveChanged = true,
+        ?bool $groupEditions = null,
     ): self {
         $results ??= app(ProductIndexResults::class);
         $query = $this->queryWithoutPage();
-        [$perPage, $descriptionSearchColumns, $searchTags] = $this->indexPaginationAndSearchPolicy($results, $query, $perPage);
+        [$perPage, $descriptionSearchColumns, $searchTags, $groupEditions] = $this->indexPaginationAndSearchPolicy($results, $query, $perPage, $groupEditions);
+        $editionGroups = $groupEditions ? EditionGroups::load() : null;
         $savedPage = self::normalizePage($this->query['page'] ?? null) ?? 1;
         $filters = ProductIndexFilters::fromQuery($query);
 
-        if ($results->pageContainsProduct($filters, $product, $perPage, $savedPage, $descriptionSearchColumns, $searchTags)) {
+        if ($results->pageContainsProduct($filters, $product, $perPage, $savedPage, $descriptionSearchColumns, $searchTags, editionGroups: $editionGroups)) {
             if ($savedPage > 1 && $perPage !== Option::INDEX_PER_PAGE_UNLIMITED) {
                 $query['page'] = (string) $savedPage;
             }
 
             return new self(
                 query: self::normalizeQuery($query),
-                fragment: (string) $product->getKey(),
+                fragment: $results->rowKeyForProduct($filters, $product, $descriptionSearchColumns, $searchTags, editionGroups: $editionGroups),
             );
         }
 
         if (! $visibilityMayHaveChanged) {
-            $page = $results->pageForProduct($filters, $product, $perPage, $descriptionSearchColumns, $searchTags);
+            $page = $results->pageForProduct($filters, $product, $perPage, $descriptionSearchColumns, $searchTags, editionGroups: $editionGroups);
 
             if ($page !== null) {
                 if ($page > 1) {
@@ -72,18 +79,20 @@ final readonly class ReturnTarget
 
                 return new self(
                     query: self::normalizeQuery($query),
-                    fragment: (string) $product->getKey(),
+                    fragment: $results->rowKeyForProduct($filters, $product, $descriptionSearchColumns, $searchTags, editionGroups: $editionGroups),
                 );
             }
         }
 
         $query = $this->queryForVisibleProduct($product, $results, $descriptionSearchColumns, $searchTags);
+        $filters = ProductIndexFilters::fromQuery($query);
         $page = $results->pageForProduct(
-            ProductIndexFilters::fromQuery($query),
+            $filters,
             $product,
             $perPage,
             $descriptionSearchColumns,
             $searchTags,
+            editionGroups: $editionGroups,
         );
 
         if ($page !== null && $page > 1) {
@@ -92,13 +101,14 @@ final readonly class ReturnTarget
 
         return new self(
             query: $query,
-            fragment: (string) $product->getKey(),
+            fragment: $results->rowKeyForProduct($filters, $product, $descriptionSearchColumns, $searchTags, editionGroups: $editionGroups),
         );
     }
 
     public function afterDeleting(
         ?ProductIndexResults $results = null,
         int|string|null $perPage = null,
+        ?bool $groupEditions = null,
     ): self {
         $results ??= app(ProductIndexResults::class);
         $savedPage = self::normalizePage($this->query['page'] ?? null);
@@ -108,13 +118,19 @@ final readonly class ReturnTarget
             return new self(query: $query);
         }
 
-        [$perPage, $descriptionSearchColumns, $searchTags] = $this->indexPaginationAndSearchPolicy($results, $query, $perPage);
+        [$perPage, $descriptionSearchColumns, $searchTags, $groupEditions] = $this->indexPaginationAndSearchPolicy($results, $query, $perPage, $groupEditions);
 
         if ($perPage === Option::INDEX_PER_PAGE_UNLIMITED) {
             return new self(query: $query);
         }
 
-        $lastPage = $results->lastPage(ProductIndexFilters::fromQuery($query), $perPage, $descriptionSearchColumns, $searchTags);
+        $lastPage = $results->lastPage(
+            ProductIndexFilters::fromQuery($query),
+            $perPage,
+            $descriptionSearchColumns,
+            $searchTags,
+            editionGroups: $groupEditions ? EditionGroups::load() : null,
+        );
         $page = min($savedPage, $lastPage ?? 1);
 
         if ($page > 1) {
@@ -177,15 +193,16 @@ final readonly class ReturnTarget
     }
 
     /**
-     * @return array{0: int|string, 1: list<string>, 2: bool}
+     * @return array{0: int|string, 1: list<string>, 2: bool, 3: bool}
      */
     private function indexPaginationAndSearchPolicy(
         ProductIndexResults $results,
         array $query,
         int|string|null $perPage,
+        ?bool $groupEditions = null,
     ): array {
         if ($perPage !== null && blank($query['search'] ?? null)) {
-            return [$perPage, [], true];
+            return [$perPage, [], true, $groupEditions ?? false];
         }
 
         $settings = Option::productIndexSettings();
@@ -200,6 +217,7 @@ final readonly class ReturnTarget
                 : [],
             ! filled($query['search'] ?? null)
                 || in_array('tags', $settings->visibleIndexFields, true),
+            $groupEditions ?? $settings->indexGroupEditionsEnabled,
         ];
     }
 

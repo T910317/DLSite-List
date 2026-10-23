@@ -33,6 +33,7 @@ class Option extends Model
     public const INDEX_IMAGE_VIEWER_ENABLED = 'index_image_viewer_enabled';
 
     public const INDEX_HOVER_PREVIEW_ENABLED = 'index_hover_preview_enabled';
+    public const INDEX_GROUP_EDITIONS_ENABLED = 'index_group_editions_enabled';
 
     public const OPTIONAL_PRODUCT_STATUSES = 'optional_product_statuses';
 
@@ -183,6 +184,7 @@ class Option extends Model
         self::INDEX_SEARCH_HIDDEN_DESCRIPTIONS_ENABLED,
         self::INDEX_IMAGE_VIEWER_ENABLED,
         self::INDEX_HOVER_PREVIEW_ENABLED,
+        self::INDEX_GROUP_EDITIONS_ENABLED,
         self::OPTIONAL_PRODUCT_STATUSES,
         self::TAG_AUTOCOMPLETE_ORDER,
         self::SERIES_AUTOCOMPLETE_ORDER,
@@ -213,6 +215,7 @@ class Option extends Model
         self::INDEX_SEARCH_HIDDEN_DESCRIPTIONS_ENABLED,
         self::INDEX_IMAGE_VIEWER_ENABLED,
         self::INDEX_HOVER_PREVIEW_ENABLED,
+        self::INDEX_GROUP_EDITIONS_ENABLED,
         self::OPTIONAL_PRODUCT_STATUSES,
         self::TAG_AUTOCOMPLETE_ORDER,
         self::SERIES_AUTOCOMPLETE_ORDER,
@@ -282,6 +285,7 @@ class Option extends Model
             self::INDEX_SEARCH_HIDDEN_DESCRIPTIONS_ENABLED => false,
             self::INDEX_IMAGE_VIEWER_ENABLED => false,
             self::INDEX_HOVER_PREVIEW_ENABLED => false,
+            self::INDEX_GROUP_EDITIONS_ENABLED => false,
             self::USER_AUTHENTICATION_ENABLED => false,
             self::ADMIN_PASSWORD_RESET_CONSUMED => false,
             self::PRODUCT_FORM_MODAL_ENABLED => false,
@@ -471,6 +475,21 @@ class Option extends Model
     public static function resetIndexHoverPreviewEnabledToDefault(): void
     {
         self::forget(self::INDEX_HOVER_PREVIEW_ENABLED);
+    }
+
+    public static function indexGroupEditionsEnabled(): bool
+    {
+        return self::booleanValueFor(self::INDEX_GROUP_EDITIONS_ENABLED, self::defaultFor(self::INDEX_GROUP_EDITIONS_ENABLED));
+    }
+
+    public static function setIndexGroupEditionsEnabled(bool $enabled): void
+    {
+        self::setBooleanValue(self::INDEX_GROUP_EDITIONS_ENABLED, $enabled);
+    }
+
+    public static function resetIndexGroupEditionsEnabledToDefault(): void
+    {
+        self::forget(self::INDEX_GROUP_EDITIONS_ENABLED);
     }
 
     /**
@@ -915,6 +934,7 @@ class Option extends Model
                 self::INDEX_SEARCH_HIDDEN_DESCRIPTIONS_ENABLED,
                 self::INDEX_IMAGE_VIEWER_ENABLED,
                 self::INDEX_HOVER_PREVIEW_ENABLED,
+                self::INDEX_GROUP_EDITIONS_ENABLED,
                 self::OPTIONAL_PRODUCT_STATUSES,
                 self::INDEX_FIELD_LAYOUT,
                 self::FILTER_FIELD_LAYOUT,
@@ -977,6 +997,10 @@ class Option extends Model
             indexHoverPreviewEnabled: self::normalizeBoolean(
                 $values->get(self::INDEX_HOVER_PREVIEW_ENABLED),
                 self::defaultFor(self::INDEX_HOVER_PREVIEW_ENABLED),
+            ),
+            indexGroupEditionsEnabled: self::normalizeBoolean(
+                $values->get(self::INDEX_GROUP_EDITIONS_ENABLED),
+                self::defaultFor(self::INDEX_GROUP_EDITIONS_ENABLED),
             ),
             optionalProductStatuses: self::jsonFromValue($values->get(self::OPTIONAL_PRODUCT_STATUSES))
                 ?? self::defaultFor(self::OPTIONAL_PRODUCT_STATUSES),

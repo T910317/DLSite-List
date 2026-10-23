@@ -38,6 +38,7 @@ final readonly class ProductIndexSettings
         public bool $searchHiddenDescriptionsEnabled,
         public bool $indexImageViewerEnabled,
         public bool $indexHoverPreviewEnabled,
+        public bool $indexGroupEditionsEnabled,
         public array $optionalProductStatuses,
         public bool $indexGroupOrderingEnabled,
         public array $tagColorSurfaces,

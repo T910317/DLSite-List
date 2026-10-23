@@ -11,6 +11,7 @@ use App\Models\GenreGroup;
 use App\Models\Option;
 use App\Models\Product;
 use App\Support\ContentTerminology;
+use App\Support\EditionGroups;
 use App\Support\ProductFieldLayout;
 use App\Support\ProductHoverPreview;
 use App\Support\ProductIndexFilters;
@@ -143,12 +144,15 @@ class ProductIndex extends Component
             $hydratedIndexFields = array_values(array_unique($hydratedIndexFields));
         }
 
+        $editionGroups = $settings->indexGroupEditionsEnabled ? EditionGroups::load() : null;
+
         $products = $productIndexResults->getProducts(
             $filters,
             $settings->perPage,
             $hydratedIndexFields,
             $settings->searchHiddenDescriptionsEnabled,
             $settings->fetchedTagLanguage,
+            $editionGroups,
         );
 
         $isUnlimited = $settings->perPage === Option::INDEX_PER_PAGE_UNLIMITED;
@@ -197,6 +201,7 @@ class ProductIndex extends Component
             $settings->dlsiteAgeAppropriateLinksEnabled,
             $currentQuery,
             $settings->dlsiteAnnounceLinksEnabled,
+            $editionGroups,
         );
 
         $terminology = app(ContentTerminology::class);

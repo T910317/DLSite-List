@@ -290,6 +290,20 @@ Covers the Hover Preview option and its per-work data:
 
 Covers the Index Ratings column: the DLsite rating row above the personal score row with labels, half-star fill, numbers, and screen reader text; only the row that has a value; `-` without ratings, including an average stored without a rating count; the `Ratings` title on the Index while sorting still uses `score` and other surfaces keep `Score`; hydrating the rating only when the column is visible; and Japanese and Traditional Chinese text.
 
+#### `tests/Feature/IndexEditionGroupingTest.php`
+
+Covers the Edition Grouping option and Index rows:
+- default, save, reset, global reset, and Options transfer
+- separate rows when disabled
+- one row per work with the badge, language labels, and Edit links
+- the original's row winning over a lower product code, and the lowest code when there is no original
+- translations of an original that is not in the library
+- a search that matches only a translation
+- work counts, pages, and unlimited pagination
+- `ReturnTarget` row and page after editing a hidden edition, and the last page after deleting
+- a query count that does not grow with the number of grouped rows
+- localized badge and language names
+
 #### `tests/Feature/IndexPaginationSettingsTest.php`
 
 Covers fixed, custom, and unlimited Index pagination settings and reset/default behavior.
@@ -730,6 +744,12 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 - Confirm keyboard focus opens the preview, arrow keys change images, and `Escape` closes it.
 - On a touch device, confirm the info button opens the preview, the arrow buttons change images, and the close button closes it.
 - Search, sort, and change pages, then confirm no previous preview remains.
+
+### Edition Grouping
+
+- Enable Edition Grouping and confirm the original and its translation share one Index row with the `Multiple languages` badge.
+- Confirm each code in the badge opens that edition's Edit page or modal and returns to the grouped row.
+- Check the badge on a narrow mobile screen.
 
 ### Cover / Sample Image Editor
 

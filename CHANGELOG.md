@@ -14,6 +14,7 @@ All notable changes to this project are documented in this file.
 * The Index shows the DLsite rating and your own score as two rows of stars with their numbers, for example `DLsite ★★★★★ 4.96` and `Mine ★★★★½ 9`. A row is shown only when there is a value.
 * Added an optional Product Code column to the Index. When enabled in `Options -> Field Layouts -> Index Table Columns`, the code gets its own column linking to DLsite, Title shows only the title, and the Title header sorts by title. It is hidden by default, so the Index looks and sorts as before.
 * Added Title to the Index sort options. It is hidden from the sort menu by default.
+* Added an optional Edition Grouping setting that shows other editions of a work in your library as one Index row, with a "Multiple languages" (or "Multiple versions") badge that links to each edition. Search and filters still check every edition. It is disabled by default.
 
 ### Changed
 

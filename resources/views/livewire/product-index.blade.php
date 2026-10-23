@@ -196,6 +196,30 @@
                                                     </div>
                                                 </div>
 
+                                                @if ($product->editions !== [])
+                                                    <div class="index-editions">
+                                                        <span class="index-editions__badge">
+                                                            {{ $product->editionsByLanguage ? __('Multiple languages') : __('Multiple versions') }}</span>
+                                                        <ul class="index-editions__list"
+                                                            aria-label="{{ __('Editions in your library') }}">
+                                                            @foreach ($product->editions as $edition)
+                                                                <li @class([
+                                                                    'index-editions__item',
+                                                                    'index-editions__item--current' => $edition['current'],
+                                                                ])>
+                                                                    @if ($edition['label'] !== null)
+                                                                        <span class="index-editions__label">{{ $edition['label'] }}</span>
+                                                                    @endif
+                                                                    <a href="{{ $edition['editUrl'] }}" class="index-editions__code"
+                                                                        data-work-form-modal-link
+                                                                        data-work-form-modal-title="{{ __('Edit Details') }}"
+                                                                        @if ($edition['current']) aria-current="true" @endif>{{ $edition['code'] }}</a>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endif
+
                                                 @if ($titleNotesVisible)
                                                     <div class="notes">
                                                         @if ($contentOverflow['inline_notes']['enabled'])
