@@ -31,7 +31,6 @@ final readonly class ProductHoverPreview
      *     tags: list<string>,
      *     description: ?string,
      *     score: ?int,
-     *     scoreLabel: ?string,
      *     images: list<string>
      * }
      */
@@ -65,9 +64,8 @@ final readonly class ProductHoverPreview
             'formats' => array_values(ProductFormat::labelsFor($product->product_format ?? [])),
             'tags' => $this->tags($id, $settings),
             'description' => $this->descriptionExcerpt($product),
-            // The user's own 1-10 score; its label follows the selected content focus.
+            // The user's own 1-10 score, shown as stars and the bare number (no score wording).
             'score' => $score !== null ? (int) $score->value : null,
-            'scoreLabel' => $score?->label(),
             // Preview pages: the saved cover first, then the saved sample images.
             'images' => array_values(array_map(
                 fn(string $path): string => asset(Product::versionedImagePath($path)),

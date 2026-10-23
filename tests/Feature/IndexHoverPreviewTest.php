@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ContentFocus;
 use App\Enums\ProductContributorRole;
 use App\Enums\ProductField;
 use App\Enums\ProductFormat;
@@ -121,6 +120,8 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertSame('Scroll to change images', $card->item(0)->getAttribute('data-label-scroll'));
         $this->assertTrue($card->item(0)->hasAttribute('hidden'));
         $this->assertSame('Work code', $card->item(0)->getAttribute('data-label-code'));
+        // The preview names the row "My score"; the shared "Score" string stays on the table column.
+        $this->assertSame('My score', $card->item(0)->getAttribute('data-label-score'));
 
         $this->get(route('index'))
             ->assertOk()
@@ -268,14 +269,12 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertSame([], $preview['tags']);
         $this->assertNull($preview['description']);
         $this->assertNull($preview['score']);
-        $this->assertNull($preview['scoreLabel']);
         $this->assertSame([], $preview['images']);
     }
 
-    public function test_preview_returns_the_own_score_with_the_content_focus_label(): void
+    public function test_preview_returns_the_own_score_as_a_bare_number(): void
     {
         Option::setIndexHoverPreviewEnabled(true);
-        Option::setContentFocus(ContentFocus::General);
 
         Product::factory()->create([
             'id' => 'RJ200000009',
@@ -292,23 +291,15 @@ class IndexHoverPreviewTest extends TestCase
             ->call('hoverPreview', 'RJ200000009')
             ->effects['returns'][0];
 
-        // The saved string score is returned as a number so the card can draw 3 of 5 stars.
+        // The saved string score is returned as a number so the card can draw 3 of 5 stars and "6".
         $this->assertSame(6, $preview['score']);
-        $this->assertSame('(6) Fine', $preview['scoreLabel']);
+        // The card shows only stars and the number, so no score wording such as "(6) Fine" is sent.
+        $this->assertArrayNotHasKey('scoreLabel', $preview);
 
         $top = app(ProductHoverPreview::class)->build('RJ200000010', Option::productIndexSettings());
 
         $this->assertSame(10, $top['score']);
-        $this->assertSame('(10) Masterpiece', $top['scoreLabel']);
-
-        // The label follows the selected content focus wording, like the score column does.
-        Option::setContentFocus(ContentFocus::Listening);
-        app()->forgetScopedInstances();
-
-        $listening = app(ProductHoverPreview::class)->build('RJ200000009', Option::productIndexSettings());
-
-        $this->assertSame(6, $listening['score']);
-        $this->assertSame('(6) Nice', $listening['scoreLabel']);
+        $this->assertArrayNotHasKey('scoreLabel', $top);
     }
 
     public function test_preview_query_count_does_not_grow_with_the_library(): void
@@ -353,7 +344,7 @@ class IndexHoverPreviewTest extends TestCase
             ->assertSee('data-label-code="作品代碼"', false)
             ->assertSee('data-label-makers="社團／品牌"', false)
             ->assertSee('data-label-description="簡介摘要"', false)
-            ->assertSee('data-label-score="分數"', false)
+            ->assertSee('data-label-score="個人分數"', false)
             ->assertSee('data-label-rating=":value / :max 分"', false)
             ->assertSee('顯示 作品名稱不翻譯 的作品預覽', false);
 

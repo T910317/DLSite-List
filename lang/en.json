@@ -925,5 +925,6 @@
     "Scroll to change images": "Scroll to change images",
     "Loading preview...": "Loading preview...",
     "The preview could not be loaded.": "The preview could not be loaded.",
-    ":value out of :max": ":value out of :max"
+    ":value out of :max": ":value out of :max",
+    "My score": "My score"
 }

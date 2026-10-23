@@ -925,5 +925,6 @@
     "Scroll to change images": "滾輪切換圖片",
     "Loading preview...": "正在載入預覽...",
     "The preview could not be loaded.": "無法載入預覽。",
-    ":value out of :max": ":value / :max 分"
+    ":value out of :max": ":value / :max 分",
+    "My score": "個人分數"
 }
