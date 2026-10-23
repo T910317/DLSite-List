@@ -62,6 +62,10 @@ DLsite links some works to other editions under different product codes: languag
 
 Adding a work is never blocked. `RelatedEditions::inLibrary()` finds library works that the new work lists, works that list the new code, and works that share a listed edition (for example two translations of one original) in one JSON query. The Create page checks the typed code through `GET /related-editions` before saving; that check covers works already in the library that list the code. After a DLsite import, the full check, including the new work's own links, is shown on the Index (or the modal completion page, which then stays open). Bulk Import stores the warning on the item next to any image warning. The Edit page lists every edition, linking to the local work when it is in the library and to DLsite otherwise.
 
+#### DLsite Rating
+
+The scraper reads the average rating (`rate_average_2dp`) and rating count (`rate_count`) from DLsite's `product/info/ajax` response, because `dlsite-async` drops them, and adds both keys to the Japanese work JSON. A work with no ratings yet has `null` for both. When the lookup fails or returns no rating fields, the scraper leaves the keys out and the work is still fetched. `DLSiteRating` keeps a rating only when the average is between 0 and 5 and the count is at least 1; otherwise both values are stored as `null`. `DLSiteProductImporter` stores them in `products.dlsite_rating` and `products.dlsite_rating_count`.
+
 A failed cover download is stored as no cover, and failed sample downloads are omitted from the saved sample list. The fetcher can retry a failed DLsite fetch up to five times. Python does not own a second retry loop.
 
 The Quick Add field layout controls which user-editable override rows are submitted. Hidden DLsite metadata such as age, product format, circle, publisher, brand, contributors, and descriptions can still be populated from scraped data.
@@ -107,7 +111,7 @@ Bulk Import history cleanup deletes all persisted run/item history and is unavai
 `POST /update/{product}`:
 - validates through `UpdateProductRequest`
 - applies only fields that the saved Edit layout allows to be edited
-- preserves hidden/read-only values
+- preserves hidden/read-only values (the DLsite rating row is always read-only and is shown only when a rating is stored)
 - synchronizes tags and contributors through shared support classes
 - updates derived sort keys when relevant values change
 
@@ -187,6 +191,8 @@ Refetch has eighteen ordered review categories defined by `RefetchCategory`.
 
 Other-edition links are DLsite metadata that users do not edit, so Refetch stores them as soon as a work is fetched, without changing `updated_at` or adding a review category. A failed edition lookup keeps the stored links.
 
+The DLsite rating is a DLsite statistic that users do not edit, so Refetch stores it as soon as a work is fetched, without changing `updated_at` or adding a review category. A failed rating lookup keeps the stored rating; a work that DLsite reports as unrated has its rating cleared.
+
 Cover and sample-image changes are independent. Refetch uses the shared `ProductImagePromotion` boundary so interrupted image replacement can be recovered safely.
 
 Refetch creation, cleanup, and review application use the shared `LibraryMutationLock`, which also serializes Import apply and work-image cleanup.
@@ -222,6 +228,8 @@ Transfer jobs use persisted checkpoints and operation/validation tokens so retri
 Each bounded export planning phase locks and rechecks the run, then commits inventory/part changes, its checkpoint, and the successor job in one database transaction. Cancellation waits for the current batch. Staged JSON paths are deterministic and can be overwritten on retry after a rollback.
 
 Work archives store other-edition links as `related_editions` in both locale documents. Archives created before the field existed leave the stored links unchanged, and `null` (never fetched) stays distinct from an empty list.
+
+Work archives store the DLsite rating as `rate_average_2dp` and `rate_count` in both locale documents, and Import Review shows them as the `dlsite_rating` and `dlsite_rating_count` categories. Archives created before the fields existed leave the stored rating unchanged; values outside the valid range quarantine the work.
 
 Partial work imports include only contributor roles explicitly present in either language document. Omitted roles are preserved; explicitly empty roles can be cleared with Overwrite.
 
@@ -376,6 +384,7 @@ DLsite:
 - `DLSitePythonRunner`
 - `DLSiteWorkFetcher`
 - `DLSiteWorkData`
+- `DLSiteRating`
 - `DLSiteProductImportInput`
 - `DLSiteProductImporter`
 
@@ -426,6 +435,7 @@ Autocomplete:
 - brand
 - product format
 - scheduled release date
+- DLsite average rating (`dlsite_rating`, 0-5 with two decimals) and rating count (`dlsite_rating_count`), both `null` when unrated or never fetched
 - Japanese and English descriptions
 - progress
 - score

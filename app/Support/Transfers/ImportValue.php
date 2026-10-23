@@ -27,6 +27,8 @@ final class ImportValue
             'maker_id', 'maker' => __('Maker ID'),
             'publisher' => __('Publisher'),
             'brand' => __('Brand'),
+            'dlsite_rating' => __('DLsite rating'),
+            'dlsite_rating_count' => __('DLsite rating count'),
             'age_category' => __('Age'),
             'product_format' => __('Product Format'),
             'related_editions' => __('Other editions'),

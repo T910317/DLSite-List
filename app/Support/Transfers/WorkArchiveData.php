@@ -5,6 +5,7 @@ namespace App\Support\Transfers;
 use App\Enums\ProductAgeCategory;
 use App\Enums\ProductContributorRole;
 use App\Models\Product;
+use App\Support\DLSite\DLSiteRating;
 use App\Support\DLSite\DLSiteWorkData;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
@@ -49,6 +50,8 @@ final class WorkArchiveData
         'title_name',
         'title_name_masked',
         'related_editions',
+        DLSiteRating::AVERAGE_KEY,
+        DLSiteRating::COUNT_KEY,
     ];
 
     private const CUSTOM_FIELDS = [
@@ -180,6 +183,8 @@ final class WorkArchiveData
             ...LibraryWorkValidator::relatedEditionsRules('english.related_editions'),
             'japanese.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
             'english.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
+            ...LibraryWorkValidator::dlsiteRatingRules('japanese.' . DLSiteRating::AVERAGE_KEY, 'japanese.' . DLSiteRating::COUNT_KEY),
+            ...LibraryWorkValidator::dlsiteRatingRules('english.' . DLSiteRating::AVERAGE_KEY, 'english.' . DLSiteRating::COUNT_KEY),
             'dlsite_list.site_id' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/\A[a-z][a-z0-9_-]*\z/'],
         ])->validate();
 
@@ -244,6 +249,10 @@ final class WorkArchiveData
         }
         if ($this->hasEither($document, 'announce_date')) {
             $details['announce_date'] = $work->announceDate;
+        }
+        // Archives made before ratings were stored leave the stored rating untouched.
+        if ($work->rating !== null) {
+            $details = [...$details, ...$work->rating->attributes()];
         }
         if (array_key_exists('notes', $custom)) {
             $details['notes'] = $custom['notes'];
@@ -327,6 +336,8 @@ final class WorkArchiveData
             'title_name' => $product->series,
             'title_name_masked' => $product->series,
             'related_editions' => $product->related_editions,
+            DLSiteRating::AVERAGE_KEY => $product->dlsite_rating,
+            DLSiteRating::COUNT_KEY => $product->dlsite_rating_count,
         ];
 
         return Arr::only($values, self::DLSITE_FIELDS);

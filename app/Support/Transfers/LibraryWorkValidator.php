@@ -12,6 +12,7 @@ use App\Enums\ProductScore;
 use App\Rules\MaxBytes;
 use App\Rules\ValidPartialDate;
 use App\Rules\ValidProductFormat;
+use App\Support\DLSite\DLSiteRating;
 use App\Support\RelatedEditions;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -36,7 +37,23 @@ final class LibraryWorkValidator
             data_set($data, 'details.related_editions', RelatedEditions::normalize(data_get($data, 'details.related_editions'), $data['product_code']));
         }
 
+        // Same stored shape as the database, so unchanged ratings do not show up for review.
+        foreach (['dlsite_rating' => DLSiteRating::average(...), 'dlsite_rating_count' => DLSiteRating::count(...)] as $field => $normalize) {
+            if (array_key_exists($field, $data['details'] ?? [])) {
+                $data['details'][$field] = $normalize($data['details'][$field]);
+            }
+        }
+
         return $data;
+    }
+
+    /** @return array<string, list<mixed>> */
+    public static function dlsiteRatingRules(string $averageField, string $countField): array
+    {
+        return [
+            $averageField => ['sometimes', 'nullable', 'numeric', 'between:0,' . DLSiteRating::MAX_AVERAGE],
+            $countField => ['sometimes', 'nullable', 'integer', 'min:0', 'max:' . DLSiteRating::MAX_COUNT],
+        ];
     }
 
     /** @return array<string, list<mixed>> */
@@ -96,6 +113,7 @@ final class LibraryWorkValidator
             ...self::productFormatRules('details.product_format'),
             ...self::relatedEditionsRules('details.related_editions'),
             'details.announce_date' => ['sometimes', 'nullable', 'date'],
+            ...self::dlsiteRatingRules('details.dlsite_rating', 'details.dlsite_rating_count'),
             'details.notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'listening' => ['sometimes', 'array:' . implode(',', LibraryData::FIELDS['listening'])],
             'listening.progress' => ['sometimes', 'nullable', Rule::enum(ProductProgress::class)],

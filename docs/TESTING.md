@@ -234,6 +234,14 @@ Covers other-edition links: storing DLsite links on import, warnings when the ne
 
 Covers export/import round trips of edition links (including `null`), review and Overwrite of changed links for an existing work, archives created before the field existed, and quarantine of invalid links.
 
+#### `tests/Feature/DLSiteRatingTest.php`
+
+Covers the DLsite rating: storing it on import, storing no rating for unrated works and failed lookups, Refetch updates that keep `updated_at` and add no review change, keeping the stored rating when the lookup fails and clearing it when DLsite reports none, and the read-only Edit page row with its English, Japanese, and Traditional Chinese text.
+
+#### `tests/Feature/DLSiteRatingTransferTest.php`
+
+Covers export/import round trips of the rating (including unrated works), review and Overwrite of a changed rating for an existing work, whole-number averages matching the stored value, archives created before the fields existed, and quarantine of out-of-range values.
+
 #### `tests/Feature/LibraryTransferLifecycleTest.php`
 
 Covers supersession/cancellation, active-transfer guards, history cleanup, queued checkpoints/retries, generation and operation tokens, late callbacks, publication recovery, browser-started imports, and transfer-storage cleanup.
@@ -274,6 +282,7 @@ Covers the Hover Preview option and its per-work data:
 - conditional markup/script output, unchanged cover links, and coexistence with the Image Viewer
 - full details while Index fields are hidden, hidden-tag exclusion, cover-first image pages, description language preference and excerpt length
 - the own score as a number with its content-focus score label, and missing-data fallbacks, including works without a score
+- the saved DLsite average rating, rating count, and translated count text, and no DLsite rating for works without one (or with an average but no count)
 - a constant query count regardless of library size
 - translated labels without translating work titles
 
@@ -596,6 +605,9 @@ Covers server-rendered Add/Edit modal completion fallback output and conditional
 `tests/Unit/Support/RelatedEditionsTest.php`
 - Covers mapping DLsite language editions, versions, and translation links, normalization (invalid codes, duplicates, the work's own code), and keeping unknown editions (`null`) apart from none (`[]`).
 
+`tests/Unit/Support/DLSite/DLSiteRatingTest.php`
+- Covers reading the scraper rating keys (with English fallback), missing keys meaning an unknown rating, rejecting unrated or invalid values as a pair, and normalizing values to the stored shape.
+
 `tests/Unit/Support/DLSite/DLSiteWorkFetcherTest.php`
 - Covers the PHP-owned five-attempt retry loop, manifest/JSON validation, partial results, immediate success, and rejection of stale JSON fallback.
 
@@ -639,6 +651,8 @@ Covers Python scraper Product Format handling:
 - stable DLsite enum-code serialization
 - age-category serialization after the `dlsite-async` upgrade
 - raw DLsite edition links, and `None` when the edition lookup fails
+
+It also covers the DLsite rating lookup: the average and count from `product/info/ajax`, `null` values for unrated works, and an unknown rating when the request fails or DLsite returns no work or no rating fields.
 
 #### `python/tests/test_weekly_logging.py`
 
@@ -701,6 +715,7 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 - Enable Hover Preview, rest on an Index cover, and confirm the large preview leaves a wide dimmed edge around it, shows the cover first and only the saved details that exist.
 - Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
 - Confirm a work scored 7 shows 3.5 lit stars with "7 / 10" and its score label, and an unscored work shows no Score row.
+- Confirm a work with a DLsite rating of 4.53 from 123 ratings shows a DLsite rating row with about 4.5 lit stars, "4.53", and "(123 ratings)", and a work without a DLsite rating shows no such row.
 - Confirm moving the pointer onto the dimmed edge closes the preview.
 - Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.
 - Confirm a quick click on the cover still opens the Image Viewer or DLsite link.

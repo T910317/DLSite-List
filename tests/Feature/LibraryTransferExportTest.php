@@ -461,6 +461,8 @@ class LibraryTransferExportTest extends TestCase
             'title_name',
             'title_name_masked',
             'related_editions',
+            'rate_average_2dp',
+            'rate_count',
         ], array_keys($work['japanese']));
         $this->assertSame(array_keys($work['japanese']), array_keys($work['english']));
         $this->assertSame([

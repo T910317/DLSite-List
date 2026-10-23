@@ -136,10 +136,42 @@ async def edition_links(api, work):
     }
 
 
+RATING_INFO_URL = "https://www.dlsite.com/maniax/product/info/ajax"
+RATING_KEYS = ("rate_average_2dp", "rate_count")
+
+
+async def rating_fields(api, product_id):
+    """
+    Returns DLsite's average rating and rating count, or None when they could not be read.
+    dlsite-async does not expose these fields, so they are requested separately.
+    A work without ratings yet returns None for both values.
+    """
+    try:
+        params = {"product_id": product_id}
+        async with api.get(RATING_INFO_URL, params=params) as response:
+            response.raise_for_status()
+            payload = await response.json(content_type=None)
+    except Exception as error:
+        logging.warning(f"Rating lookup failed for {product_id}: {error}")
+        return None
+
+    info = payload.get(product_id) if isinstance(payload, dict) else None
+
+    if not isinstance(info, dict) or not any(key in info for key in RATING_KEYS):
+        logging.warning(f"Rating lookup returned no rating fields for {product_id}")
+        return None
+
+    return {key: info.get(key) for key in RATING_KEYS}
+
+
 async def japanese_dlsite(work_id):
     async with DlsiteAPI() as api:
         work = await api.get_work(work_id)
-        return work, await edition_links(api, work)
+        return (
+            work,
+            await edition_links(api, work),
+            await rating_fields(api, work.product_id),
+        )
 
 
 async def english_dlsite(work_id):
@@ -153,11 +185,11 @@ async def traditional_chinese_dlsite(work_id):
 
 
 async def fetch_work_data(work_id):
-    japanese, editions = await japanese_dlsite(work_id)
+    japanese, editions, rating = await japanese_dlsite(work_id)
     english = await english_dlsite(work_id)
     traditional_chinese = await traditional_chinese_dlsite(work_id)
 
-    return japanese, english, traditional_chinese, editions
+    return japanese, english, traditional_chinese, editions, rating
 
 
 def download_image(url, save_path):
@@ -250,7 +282,7 @@ def fetch_images(work, image_output):
 
 
 def run(arguments):
-    work_japanese, work_english, work_traditional_chinese, editions = asyncio.run(
+    work_japanese, work_english, work_traditional_chinese, editions, rating = asyncio.run(
         fetch_work_data(arguments.work_id)
     )
     japanese = to_serializable(work_japanese)
@@ -262,6 +294,9 @@ def run(arguments):
     # Leaving the key out means "unknown", so Laravel keeps the stored links.
     if editions is not None:
         japanese["dlsite_editions"] = editions
+    # Leaving the keys out means "unknown", so Laravel keeps the stored rating.
+    if rating is not None:
+        japanese.update(rating)
     combined = {
         "japanese": japanese,
         "english": english,

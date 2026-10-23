@@ -10,11 +10,11 @@ It supports DLsite works with RJ, BJ, and VJ codes - Voice / ASMR, Games, Manga,
 
 - **Add works:** Fetch metadata from DLsite, import multiple DLsite works at once, or create custom entries with your own details and images.
 - **Other editions:** See other language editions, translations, and platform versions of a work that DLsite links together, and get a warning when you add a work whose other edition is already in your library.
-- **Edit works:** Edit work information and add details like current status, score, start and finish dates, priorities, and re-listens.
+- **Edit works:** Edit work information and add details like current status, score, start and finish dates, priorities, and re-listens. The Edit page also shows the work's DLsite average rating and rating count.
 - **Tag Library:** Add your own tags and organize them into groups. Add parent/child relationships, customize tag and group colors, control visibility, and change their order on the Index.
 - **Search and Filter:** Search, filter, and sort your library.
 - **Image Viewer:** View saved covers and sample images.
-- **Hover Preview:** Rest on a cover to open a large view of its saved cover, sample images, and work details (your own score shown as stars), and use the mouse wheel to change images.
+- **Hover Preview:** Rest on a cover to open a large view of its saved cover, sample images, and work details (your own score and the DLsite average rating shown as stars), and use the mouse wheel to change images.
 
 ### ⇄ Updates & Transfers
 

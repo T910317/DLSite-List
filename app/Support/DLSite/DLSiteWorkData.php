@@ -32,6 +32,8 @@ final readonly class DLSiteWorkData
         public ?array $traditionalChineseGenres = null,
         /** @var list<array{code: string, type: string, label: ?string}>|null Null when editions are unknown. */
         public ?array $relatedEditions = null,
+        /** Null when the rating could not be read, so stored values are kept. */
+        public ?DLSiteRating $rating = null,
     ) {}
 
     public static function fromArray(array $workData, ?string $fallbackProductId = null): self
@@ -72,6 +74,7 @@ final readonly class DLSiteWorkData
             contributorsByRole: self::contributorsByRole($japanese, $english),
             traditionalChineseGenres: $traditionalChinese === null ? null : self::list($traditionalChinese['genre'] ?? []),
             relatedEditions: RelatedEditions::fromWorkData($japanese, $english, $productId),
+            rating: DLSiteRating::fromLocales($japanese, $english),
         );
     }
 

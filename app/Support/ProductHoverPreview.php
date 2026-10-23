@@ -9,6 +9,7 @@ use App\Enums\ProductScore;
 use App\Enums\UiLanguage;
 use App\Models\GenreGroup;
 use App\Models\Product;
+use App\Support\DLSite\DLSiteRating;
 use Illuminate\Support\Str;
 
 /**
@@ -32,6 +33,9 @@ final readonly class ProductHoverPreview
      *     description: ?string,
      *     score: ?int,
      *     scoreLabel: ?string,
+     *     dlsiteRating: ?float,
+     *     dlsiteRatingCount: ?int,
+     *     dlsiteRatingCountLabel: ?string,
      *     images: list<string>
      * }
      */
@@ -50,10 +54,14 @@ final readonly class ProductHoverPreview
             'work_image',
             'sample_images',
             'score',
+            'dlsite_rating',
+            'dlsite_rating_count',
         ]);
 
         $id = (string) $product->getKey();
         $score = ProductScore::tryFrom((string) $product->score);
+        // Same pairing rule as import and Refetch: a rating without a usable count is not shown.
+        $dlsiteRating = DLSiteRating::from($product->dlsite_rating, $product->dlsite_rating_count);
 
         return [
             'id' => $id,
@@ -68,6 +76,14 @@ final readonly class ProductHoverPreview
             // The user's own 1-10 score; its label follows the selected content focus.
             'score' => $score !== null ? (int) $score->value : null,
             'scoreLabel' => $score?->label(),
+            // DLsite's 0-5 average and how many ratings it comes from; both null when DLsite has none saved.
+            'dlsiteRating' => $dlsiteRating->average,
+            'dlsiteRatingCount' => $dlsiteRating->count,
+            'dlsiteRatingCountLabel' => $dlsiteRating->count !== null
+                ? trans_choice('(:count rating)|(:count ratings)', $dlsiteRating->count, [
+                    'count' => number_format($dlsiteRating->count),
+                ])
+                : null,
             // Preview pages: the saved cover first, then the saved sample images.
             'images' => array_values(array_map(
                 fn(string $path): string => asset(Product::versionedImagePath($path)),
