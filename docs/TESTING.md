@@ -264,7 +264,7 @@ Covers the Hover Preview option and its per-work data:
 - default, save, reset, and independence from the Image Viewer option
 - conditional markup/script output, unchanged cover links, and coexistence with the Image Viewer
 - full details while Index fields are hidden, hidden-tag exclusion, cover-first image pages, description language preference and excerpt length
-- missing-data fallbacks
+- the own score as a number with its content-focus score label, and missing-data fallbacks, including works without a score
 - a constant query count regardless of library size
 - translated labels without translating work titles
 
@@ -686,6 +686,7 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 
 - Enable Hover Preview, rest on an Index cover, and confirm the large preview leaves a wide dimmed edge around it, shows the cover first and only the saved details that exist.
 - Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
+- Confirm a work scored 7 shows 3.5 lit stars with "7 / 10" and its score label, and an unscored work shows no Score row.
 - Confirm moving the pointer onto the dimmed edge closes the preview.
 - Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.
 - Confirm a quick click on the cover still opens the Image Viewer or DLsite link.

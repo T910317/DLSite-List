@@ -924,5 +924,6 @@
     "Summary": "あらすじ",
     "Scroll to change images": "ホイールで画像を切り替え",
     "Loading preview...": "プレビューを読み込んでいます...",
-    "The preview could not be loaded.": "プレビューを読み込めませんでした。"
+    "The preview could not be loaded.": "プレビューを読み込めませんでした。",
+    ":value out of :max": ":max 点中 :value 点"
 }

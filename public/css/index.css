@@ -847,6 +847,43 @@ body.filter-modal-open {
     border-radius: 999px;
 }
 
+.index-hover-preview__score {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+}
+
+/* Star meter: a faint row of stars with a lit copy on top, clipped to the score's width. */
+.index-hover-preview__stars {
+    position: relative;
+    display: inline-block;
+    color: var(--image-viewer-control-hover-border, #DD7D7D);
+    font-size: 16px;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.index-hover-preview__stars-track {
+    opacity: .28;
+}
+
+.index-hover-preview__stars-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.index-hover-preview__score-value {
+    font-weight: bold;
+}
+
+.index-hover-preview__score-label {
+    opacity: .8;
+}
+
 .index-hover-preview__status {
     margin: 0;
     opacity: .8;
