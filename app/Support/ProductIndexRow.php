@@ -9,6 +9,7 @@ final readonly class ProductIndexRow
     /**
      * @param  Collection<string, Collection<int, ProductIndexContributorRow>>  $contributors
      * @param  list<array{name: string, indexUrl: string}>  $makerNames
+     * @param  list<array{code: string, label: ?string, editUrl: string, current: bool}>  $editions  library editions sharing this row ([] when ungrouped)
      */
     public function __construct(
         public string $id,
@@ -34,5 +35,7 @@ final readonly class ProductIndexRow
         public ?string $circleUrl,
         public ?string $publisherUrl,
         public ?string $brandUrl,
+        public array $editions = [],
+        public bool $editionsByLanguage = false,
     ) {}
 }

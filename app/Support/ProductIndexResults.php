@@ -68,12 +68,16 @@ final class ProductIndexResults
         'updated_at',
     ];
 
+    /**
+     * @param  EditionGroups|null  $editionGroups  when given, other editions of a work share one row
+     */
     public function getProducts(
         ProductIndexFilters $filters,
         int|string $perPage,
         array $visibleFields,
         bool $searchHiddenDescriptionsEnabled = false,
         ?string $fetchedLanguage = null,
+        ?EditionGroups $editionGroups = null,
     ): EloquentCollection|LengthAwarePaginator {
         $query = $this->filteredQuery(
             $filters,
@@ -82,11 +86,38 @@ final class ProductIndexResults
             in_array(ProductField::Tags->value, $visibleFields, true),
             $fetchedLanguage,
         );
+        [$query] = $this->groupEditions($query, $editionGroups);
         $query = $this->applySqlSorting($query, $filters->sorts());
 
         return $perPage === Option::INDEX_PER_PAGE_UNLIMITED
             ? $query->get()
             : $query->paginate((int) $perPage);
+    }
+
+    /**
+     * The Index row that shows $product: its own, or the row of another matching edition
+     * of the same work when editions share one row.
+     */
+    public function rowKeyForProduct(
+        ProductIndexFilters $filters,
+        Product $product,
+        array $descriptionSearchColumns,
+        bool $searchTags = true,
+        ?string $fetchedLanguage = null,
+        ?EditionGroups $editionGroups = null,
+    ): string {
+        $key = (string) $product->getKey();
+        $members = $editionGroups?->members($key) ?? [];
+
+        if ($members === []) {
+            return $key;
+        }
+
+        $matching = $this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage)
+            ->whereKey($members)
+            ->pluck('id');
+
+        return $editionGroups->rowCodes($matching)[$key] ?? $key;
     }
 
     public function containsProduct(
@@ -109,15 +140,21 @@ final class ProductIndexResults
         array $descriptionSearchColumns,
         bool $searchTags = true,
         ?string $fetchedLanguage = null,
+        ?EditionGroups $editionGroups = null,
     ): bool {
         if ($perPage === Option::INDEX_PER_PAGE_UNLIMITED) {
             return $this->containsProduct($filters, $product, $descriptionSearchColumns, $searchTags, $fetchedLanguage);
         }
 
-        return $this->applySqlSorting($this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage), $filters->sorts())
+        [$query, $rowCodes] = $this->groupEditions(
+            $this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage),
+            $editionGroups,
+        );
+
+        return $this->applySqlSorting($query, $filters->sorts())
             ->forPage(max(1, $page), max(1, (int) $perPage))
             ->pluck('id')
-            ->containsStrict((string) $product->getKey());
+            ->containsStrict($rowCodes[(string) $product->getKey()] ?? (string) $product->getKey());
     }
 
     public function pageForProduct(
@@ -127,14 +164,19 @@ final class ProductIndexResults
         array $descriptionSearchColumns,
         bool $searchTags = true,
         ?string $fetchedLanguage = null,
+        ?EditionGroups $editionGroups = null,
     ): ?int {
         if ($perPage === Option::INDEX_PER_PAGE_UNLIMITED) {
             return null;
         }
 
-        $position = $this->applySqlSorting($this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage), $filters->sorts())
+        [$query, $rowCodes] = $this->groupEditions(
+            $this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage),
+            $editionGroups,
+        );
+        $position = $this->applySqlSorting($query, $filters->sorts())
             ->pluck('id')
-            ->search((string) $product->getKey(), true);
+            ->search($rowCodes[(string) $product->getKey()] ?? (string) $product->getKey(), true);
 
         return $position === false
             ? null
@@ -147,15 +189,19 @@ final class ProductIndexResults
         array $descriptionSearchColumns,
         bool $searchTags = true,
         ?string $fetchedLanguage = null,
+        ?EditionGroups $editionGroups = null,
     ): ?int {
         if ($perPage === Option::INDEX_PER_PAGE_UNLIMITED) {
             return null;
         }
 
         $perPage = max(1, (int) $perPage);
-        $total = $this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage)->count();
+        [$query] = $this->groupEditions(
+            $this->filteredQuery($filters, null, $descriptionSearchColumns, $searchTags, $fetchedLanguage),
+            $editionGroups,
+        );
 
-        return max(1, (int) ceil($total / $perPage));
+        return max(1, (int) ceil($query->count() / $perPage));
     }
 
     public function descriptionSearchColumns(array $visibleFields, bool $searchHiddenDescriptionsEnabled): array
@@ -175,6 +221,31 @@ final class ProductIndexResults
         }
 
         return $columns;
+    }
+
+    /**
+     * Keeps one row per work: when several editions of a work match, only the first in row
+     * order (see EditionGroups) stays. Editions are compared after filtering, so a search
+     * that matches only a translation still shows that translation's row.
+     *
+     * @return array{0: Builder, 1: array<string, string>} the query and the row of each matching grouped work
+     */
+    private function groupEditions(Builder $query, ?EditionGroups $editionGroups): array
+    {
+        if ($editionGroups === null || $editionGroups->isEmpty()) {
+            return [$query, []];
+        }
+
+        $rowCodes = $editionGroups->rowCodes(
+            (clone $query)->select('id')->whereKey($editionGroups->codes())->pluck('id'),
+        );
+        $hidden = array_keys(array_filter(
+            $rowCodes,
+            fn(string $rowCode, string $code): bool => $rowCode !== $code,
+            ARRAY_FILTER_USE_BOTH,
+        ));
+
+        return [$hidden === [] ? $query : $query->whereKeyNot($hidden), $rowCodes];
     }
 
     private function filteredQuery(

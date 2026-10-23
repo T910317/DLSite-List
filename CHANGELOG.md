@@ -7,6 +7,7 @@ All notable changes to this project are documented in this file.
 ### Added
 
 * Added links between other editions of a work (language editions, translations, and versions such as Windows/Mac) as reported by DLsite. The Edit page lists them, and adding a work shows a warning when another edition is already in your library. Saving is never blocked.
+* Added an optional Edition Grouping setting that shows other editions of a work in your library as one Index row, with a "Multiple languages" (or "Multiple versions") badge that links to each edition. Search and filters still check every edition. It is disabled by default.
 
 ## 2.1.0 - 2026-10-22
 

@@ -554,6 +554,20 @@ When enabled:
 
 Hiding the Image field does not reset the saved Image Viewer option.
 
+#### Edition Grouping
+
+Default: disabled.
+
+When enabled, works in your library that DLsite links as editions of one work (the original, its translations and language editions, and versions such as Windows/Mac) share one Index row:
+- the row belongs to the original when it matches the current search and filters; otherwise it belongs to the matching edition with the lowest product code
+- the row shows a `Multiple languages` badge, or `Multiple versions` when the editions differ only by platform or version, and lists each edition in your library with its language and a link to its Edit page
+- search and filters still check every edition, so a search that matches only a translation shows the translation's row
+- the work count and pages count one row per work
+
+Works are grouped only when DLsite links them. Works added before other-edition links were stored are grouped after a Refetch.
+
+The setting is disabled by default because it changes which rows, counts, and pages the Index shows.
+
 #### Index Table Width
 
 Default: `default` choice

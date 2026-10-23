@@ -123,6 +123,16 @@
                     <livewire:index-image-viewer-settings />
 
                     <h2>
+                        <i class="fa-solid fa-clone fa-fw options-section-icon" aria-hidden="true"></i>
+                        {{ __('Edition Grouping') }}
+                    </h2>
+                    <p class="option-description">
+                        {{ __('Choose whether other editions of a work in your library, such as the original and its translations, share one Index row.') }}
+                    </p>
+
+                    <livewire:index-edition-grouping-settings />
+
+                    <h2>
                         <i class="fa-solid fa-arrows-left-right fa-fw options-section-icon" aria-hidden="true"></i>
                         {{ __('Index Table Width') }}
                     </h2>

@@ -266,6 +266,20 @@ Covers the Image Viewer option and Index viewer rendering/data:
 - safe full-image links
 - conditional script/dialog output
 
+#### `tests/Feature/IndexEditionGroupingTest.php`
+
+Covers the Edition Grouping option and Index rows:
+- default, save, reset, global reset, and Options transfer
+- separate rows when disabled
+- one row per work with the badge, language labels, and Edit links
+- the original's row winning over a lower product code, and the lowest code when there is no original
+- translations of an original that is not in the library
+- a search that matches only a translation
+- work counts, pages, and unlimited pagination
+- `ReturnTarget` row and page after editing a hidden edition, and the last page after deleting
+- a query count that does not grow with the number of grouped rows
+- localized badge and language names
+
 #### `tests/Feature/IndexPaginationSettingsTest.php`
 
 Covers fixed, custom, and unlimited Index pagination settings and reset/default behavior.
@@ -683,6 +697,12 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 - Open another work and confirm the viewer starts from that work's cover.
 - Confirm `View in full` opens the currently displayed image in a new tab.
 - Check behavior when one of the saved image paths is missing/unavailable and confirm the viewer remains usable.
+
+### Edition Grouping
+
+- Enable Edition Grouping and confirm the original and its translation share one Index row with the `Multiple languages` badge.
+- Confirm each code in the badge opens that edition's Edit page or modal and returns to the grouped row.
+- Check the badge on a narrow mobile screen.
 
 ### Cover / Sample Image Editor
 
