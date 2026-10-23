@@ -913,7 +913,7 @@
     "Hover Preview": "Hover Preview",
     "Choose whether resting on a cover shows a quick preview from saved data.": "Choose whether resting on a cover shows a quick preview from saved data.",
     "Show work details and sample images when hovering a cover": "Show work details and sample images when hovering a cover",
-    "When enabled, resting on an Index cover shows saved work details and cycles through saved sample images. Clicking the cover still works as before.": "When enabled, resting on an Index cover shows saved work details and cycles through saved sample images. Clicking the cover still works as before.",
+    "When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.": "When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.",
     "Save hover preview setting": "Save hover preview setting",
     "Hover preview setting saved.": "Hover preview setting saved.",
     "Hover preview setting reset to default.": "Hover preview setting reset to default.",
@@ -922,7 +922,7 @@
     "Work code": "Work code",
     "Circle / Brand": "Circle / Brand",
     "Summary": "Summary",
-    "Sample images: :count": "Sample images: :count",
+    "Scroll to change images": "Scroll to change images",
     "Loading preview...": "Loading preview...",
     "The preview could not be loaded.": "The preview could not be loaded."
 }

@@ -6,56 +6,53 @@
     window.indexHoverPreviewInitialized = true;
 
     const SHOW_DELAY_MS = 300;
-    const SLIDE_INTERVAL_MS = 1500;
     const CACHE_LIMIT = 50;
     const IMAGE_CHECK_LIMIT = 500;
+    // One page per wheel notch; trackpads send many small deltas, so they are summed first.
+    const WHEEL_STEP = 40;
+    const WHEEL_COOLDOWN_MS = 150;
+    const WHEEL_IDLE_MS = 250;
     const TRIGGER_SELECTOR = '[data-index-hover-preview]';
     const TOGGLE_SELECTOR = '[data-index-hover-preview-toggle]';
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
     // Responses are kept per rendered page only; any Livewire re-render clears them.
     const cache = new Map();
-    // Sample images that failed once are skipped for the rest of the page lifetime.
+    // Images that failed once are skipped for the rest of the page lifetime.
     const failedImages = new Set();
-    // One load check per sample image URL, shared by the image count and the slideshow.
+    // One load check per image URL, shared by every preview that uses it.
     const imageChecks = new Map();
 
     let active = null;
     let showTimer = null;
-    let slideTimer = null;
     let token = 0;
+    let wheelDelta = 0;
+    let wheelLastAt = 0;
+    let wheelLockedUntil = 0;
 
-    const card = () => document.getElementById('index-hover-preview');
+    const layer = () => document.getElementById('index-hover-preview');
 
-    const label = (name) => card()?.dataset[name] ?? '';
+    const label = (name) => layer()?.dataset[name] ?? '';
 
     const coverFor = (productId) => document.querySelector(
         `${TRIGGER_SELECTOR}[data-index-hover-preview="${CSS.escape(productId)}"]`,
     );
+
+    const isInsideLayer = (node) => node instanceof Node && Boolean(layer()?.contains(node));
 
     const clearShowTimer = () => {
         window.clearTimeout(showTimer);
         showTimer = null;
     };
 
-    const stopSlides = () => {
-        window.clearTimeout(slideTimer);
-        slideTimer = null;
-
-        document.querySelectorAll('[data-index-hover-preview-slide]').forEach((slide) => slide.remove());
-    };
-
     const hide = () => {
         token++;
         clearShowTimer();
-        stopSlides();
 
-        const element = card();
+        const root = layer();
 
-        if (element) {
-            element.hidden = true;
-            element.replaceChildren();
+        if (root) {
+            root.hidden = true;
+            root.replaceChildren();
         }
 
         if (active) {
@@ -64,6 +61,7 @@
         }
 
         active = null;
+        wheelDelta = 0;
     };
 
     const reset = () => {
@@ -96,108 +94,86 @@
         return request;
     };
 
-    const position = () => {
-        const element = card();
+    const element = (tag, className, text) => {
+        const node = document.createElement(tag);
 
-        if (!element || !active || element.hidden) {
-            return;
+        if (className) {
+            node.className = className;
         }
 
-        const trigger = active.cover ?? active.toggle;
-        const anchor = trigger.getBoundingClientRect();
-        const row = trigger.closest('tr')?.getBoundingClientRect() ?? anchor;
-        const gap = 8;
-        const margin = 16;
-        const width = element.offsetWidth;
-        const height = element.offsetHeight;
-        const viewportWidth = document.documentElement.clientWidth;
-        const viewportHeight = window.innerHeight;
-
-        const left = Math.max(margin, Math.min(anchor.left, viewportWidth - margin - width));
-        let top;
-
-        // Keep the hovered row readable: open below it, or above it when there is no room below.
-        if (row.bottom + gap + height <= viewportHeight - margin) {
-            top = row.bottom + gap;
-        } else if (row.top - gap - height >= margin) {
-            top = row.top - gap - height;
-        } else {
-            // Tall card-style rows on narrow screens: stay right under the cover.
-            top = anchor.bottom + gap;
+        if (text !== undefined) {
+            node.textContent = text;
         }
 
-        top = Math.max(margin, Math.min(top, viewportHeight - margin - height));
+        return node;
+    };
 
-        element.style.left = `${Math.round(left)}px`;
-        element.style.top = `${Math.round(top)}px`;
+    const iconButton = (className, icon, text) => {
+        const button = element('button', className);
+        button.type = 'button';
+        // The wheel and arrow keys page through images; the buttons are for pointers and touch.
+        button.tabIndex = -1;
+        button.setAttribute('aria-label', text);
+        button.title = text;
+
+        const glyph = element('i', `fa-solid ${icon}`);
+        glyph.setAttribute('aria-hidden', 'true');
+        button.append(glyph);
+
+        return button;
+    };
+
+    const openLayer = (panelChildren) => {
+        const root = layer();
+
+        if (!root) {
+            return null;
+        }
+
+        const panel = element('div', 'index-hover-preview__panel');
+        const close = iconButton('index-hover-preview__close', 'fa-xmark', label('labelClose'));
+        close.setAttribute('data-index-hover-preview-close', '');
+
+        panel.append(...panelChildren, close);
+        root.replaceChildren(panel);
+        root.hidden = false;
+
+        return panel;
+    };
+
+    const renderStatus = (message) => {
+        openLayer([element('p', 'index-hover-preview__status', message)]);
     };
 
     const appendSection = (parent, heading, content) => {
-        const section = document.createElement('div');
-        section.className = 'index-hover-preview__section';
-
-        const title = document.createElement('dt');
-        title.textContent = heading;
-
-        const value = document.createElement('dd');
+        const section = element('div', 'index-hover-preview__section');
+        const value = element('dd');
 
         if (Array.isArray(content)) {
-            const list = document.createElement('ul');
-            list.className = 'index-hover-preview__chips';
+            const list = element('ul', 'index-hover-preview__chips');
 
-            content.forEach((item) => {
-                const chip = document.createElement('li');
-                chip.textContent = item;
-                list.append(chip);
-            });
-
+            content.forEach((item) => list.append(element('li', '', item)));
             value.append(list);
         } else {
             value.textContent = content;
         }
 
-        section.append(title, value);
+        section.append(element('dt', '', heading), value);
         parent.append(section);
     };
 
-    const renderStatus = (message) => {
-        const element = card();
-
-        if (!element) {
-            return;
-        }
-
-        const status = document.createElement('p');
-        status.className = 'index-hover-preview__status';
-        status.textContent = message;
-
-        element.replaceChildren(status);
-        element.hidden = false;
-        position();
-    };
-
     const renderPreview = (data) => {
-        const element = card();
+        const stage = element('div', 'index-hover-preview__stage');
+        stage.append(element('p', 'index-hover-preview__status', label('labelLoading')));
 
-        if (!element) {
-            return;
-        }
-
-        const title = document.createElement('p');
-        title.className = 'index-hover-preview__title';
-        title.textContent = data.title;
-
-        const children = [title];
+        const info = element('div', 'index-hover-preview__info');
+        info.append(element('p', 'index-hover-preview__title', data.title));
 
         if (data.alternateTitle) {
-            const alternate = document.createElement('p');
-            alternate.className = 'index-hover-preview__subtitle';
-            alternate.textContent = data.alternateTitle;
-            children.push(alternate);
+            info.append(element('p', 'index-hover-preview__subtitle', data.alternateTitle));
         }
 
-        const details = document.createElement('dl');
-        details.className = 'index-hover-preview__details';
+        const details = element('dl', 'index-hover-preview__details');
 
         appendSection(details, label('labelCode'), data.id);
 
@@ -217,26 +193,63 @@
             appendSection(details, label('labelDescription'), data.description);
         }
 
-        children.push(details);
+        info.append(details);
 
-        element.replaceChildren(...children);
-        element.hidden = false;
-        position();
+        return openLayer([stage, info]) ? stage : null;
     };
 
-    const renderImageCount = (count) => {
-        const element = card();
-
-        if (!element || count === 0) {
+    const showPage = (index) => {
+        if (!active?.pages?.length || !active.stage) {
             return;
         }
 
-        const images = document.createElement('p');
-        images.className = 'index-hover-preview__meta';
-        images.textContent = label('labelImages').replace(':count', count);
+        const pages = active.pages;
+        const page = Math.max(0, Math.min(index, pages.length - 1));
+        const stage = active.stage;
 
-        element.append(images);
-        position();
+        active.page = page;
+        stage.querySelector('.index-hover-preview__image').src = pages[page];
+        stage.querySelector('.index-hover-preview__counter').textContent = `${page + 1} / ${pages.length}`;
+        stage.querySelector('[data-index-hover-preview-previous]').disabled = page === 0;
+        stage.querySelector('[data-index-hover-preview-next]').disabled = page === pages.length - 1;
+    };
+
+    const step = (direction) => {
+        if (active?.pages?.length > 1) {
+            showPage(active.page + direction);
+        }
+    };
+
+    const renderPages = (stage, pages) => {
+        if (pages.length === 0) {
+            stage.replaceChildren(element('p', 'index-hover-preview__status', label('labelNoImage')));
+
+            return;
+        }
+
+        const image = element('img', 'index-hover-preview__image');
+        image.alt = '';
+
+        const previous = iconButton('index-hover-preview__nav is-previous', 'fa-chevron-left', label('labelPrevious'));
+        previous.setAttribute('data-index-hover-preview-previous', '');
+
+        const next = iconButton('index-hover-preview__nav is-next', 'fa-chevron-right', label('labelNext'));
+        next.setAttribute('data-index-hover-preview-next', '');
+
+        const footer = element('div', 'index-hover-preview__footer');
+        footer.append(element('span', 'index-hover-preview__counter'));
+
+        if (pages.length > 1) {
+            footer.append(element('span', 'index-hover-preview__hint', label('labelScroll')));
+        } else {
+            previous.hidden = true;
+            next.hidden = true;
+        }
+
+        stage.replaceChildren(image, previous, next, footer);
+        active.stage = stage;
+        active.pages = pages;
+        showPage(0);
     };
 
     const checkImage = (source) => {
@@ -265,64 +278,11 @@
         return imageChecks.get(source);
     };
 
-    // Only images that actually load are counted and cycled; broken ones are dropped up front.
+    // Only images that actually load become pages; broken ones are dropped up front.
     const loadableImages = async (images) => {
         const results = await Promise.all(images.map(checkImage));
 
         return images.filter((source, index) => results[index]);
-    };
-
-    const playSlides = (cover, images, current) => {
-        if (reducedMotion.matches || !cover.isConnected) {
-            return;
-        }
-
-        const candidates = images.filter((source) => !failedImages.has(source));
-
-        if (candidates.length === 0) {
-            stopSlides();
-
-            return;
-        }
-
-        const index = candidates.length === 1 ? 0 : (candidates.indexOf(current) + 1) % candidates.length;
-        const source = candidates[index];
-        const slideToken = token;
-        const loader = new Image();
-
-        loader.addEventListener('load', () => {
-            if (slideToken !== token || !cover.isConnected) {
-                return;
-            }
-
-            let slide = cover.querySelector('[data-index-hover-preview-slide]');
-
-            if (!slide) {
-                slide = document.createElement('img');
-                slide.className = 'index-hover-preview-slide';
-                slide.alt = '';
-                slide.setAttribute('data-index-hover-preview-slide', '');
-                cover.append(slide);
-            }
-
-            slide.src = source;
-
-            if (candidates.length > 1) {
-                slideTimer = window.setTimeout(() => playSlides(cover, images, source), SLIDE_INTERVAL_MS);
-            }
-        });
-
-        loader.addEventListener('error', () => {
-            if (slideToken !== token) {
-                return;
-            }
-
-            failedImages.add(source);
-            // Move on at the normal pace; a broken image never gets requested again.
-            slideTimer = window.setTimeout(() => playSlides(cover, images, current), SLIDE_INTERVAL_MS);
-        });
-
-        loader.src = source;
     };
 
     const show = async (cover, toggle) => {
@@ -335,7 +295,7 @@
         hide();
 
         const showToken = token;
-        active = { productId, cover, toggle };
+        active = { productId, cover, toggle, pages: [], page: 0, stage: null };
         cover?.setAttribute('aria-describedby', 'index-hover-preview');
         toggle?.setAttribute('aria-expanded', 'true');
 
@@ -358,23 +318,19 @@
             return;
         }
 
-        renderPreview(data);
+        const stage = renderPreview(data);
 
-        if (!Array.isArray(data.images) || data.images.length === 0) {
+        if (!stage) {
             return;
         }
 
-        const images = await loadableImages(data.images);
+        const pages = await loadableImages(Array.isArray(data.images) ? data.images : []);
 
         if (showToken !== token) {
             return;
         }
 
-        renderImageCount(images.length);
-
-        if (cover && images.length > 0) {
-            playSlides(cover, images, null);
-        }
+        renderPages(stage, pages);
     };
 
     const scheduleShow = (cover) => {
@@ -386,8 +342,26 @@
         showTimer = window.setTimeout(() => show(cover, null), SHOW_DELAY_MS);
     };
 
+    const pointIsOnCover = (event) => {
+        const rect = active?.cover?.getBoundingClientRect();
+
+        return Boolean(rect)
+            && event.clientX >= rect.left && event.clientX <= rect.right
+            && event.clientY >= rect.top && event.clientY <= rect.bottom;
+    };
+
     document.addEventListener('pointerover', (event) => {
         if (event.pointerType === 'touch' || !(event.target instanceof Element)) {
+            return;
+        }
+
+        // The preview covers the page; moving off the panel onto the dimmed edge closes it,
+        // except right where the cover sits underneath, so it does not flicker on open.
+        if (active && event.target === layer()) {
+            if (!pointIsOnCover(event)) {
+                hide();
+            }
+
             return;
         }
 
@@ -406,6 +380,11 @@
         const cover = event.target.closest(TRIGGER_SELECTOR);
 
         if (!cover || (event.relatedTarget instanceof Node && cover.contains(event.relatedTarget))) {
+            return;
+        }
+
+        // The opened preview sits on top of the cover, so the pointer "leaving" into it keeps it open.
+        if (isInsideLayer(event.relatedTarget)) {
             return;
         }
 
@@ -431,18 +410,22 @@
             return;
         }
 
+        if (isInsideLayer(event.relatedTarget)) {
+            return;
+        }
+
         if (active?.cover || showTimer) {
             hide();
         }
     });
 
-    // Clicking a cover keeps its normal job (Image Viewer or DLsite link); the preview just gets out of the way.
+    // Clicking a cover before the preview opens keeps its normal job (Image Viewer or DLsite link).
     document.addEventListener('pointerdown', (event) => {
         if (!(event.target instanceof Element)) {
             return;
         }
 
-        if (event.target.closest(TOGGLE_SELECTOR) || event.target.closest('#index-hover-preview')) {
+        if (event.target.closest(TOGGLE_SELECTOR) || isInsideLayer(event.target)) {
             return;
         }
 
@@ -453,6 +436,21 @@
 
     document.addEventListener('click', (event) => {
         if (!(event.target instanceof Element)) {
+            return;
+        }
+
+        if (isInsideLayer(event.target)) {
+            if (event.target === layer() || event.target.closest('[data-index-hover-preview-close]')) {
+                const toggle = active?.toggle;
+
+                hide();
+                toggle?.focus();
+            } else if (event.target.closest('[data-index-hover-preview-previous]')) {
+                step(-1);
+            } else if (event.target.closest('[data-index-hover-preview-next]')) {
+                step(1);
+            }
+
             return;
         }
 
@@ -473,31 +471,73 @@
         show(coverFor(toggle.dataset.indexHoverPreviewToggle), toggle);
     });
 
+    // The wheel turns pages instead of scrolling the Index underneath.
+    document.addEventListener('wheel', (event) => {
+        if (!active || !isInsideLayer(event.target)) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const now = performance.now();
+
+        if (now - wheelLastAt > WHEEL_IDLE_MS) {
+            wheelDelta = 0;
+        }
+
+        wheelLastAt = now;
+
+        if (now < wheelLockedUntil) {
+            return;
+        }
+
+        wheelDelta += event.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? event.deltaY : event.deltaY * 40;
+
+        if (Math.abs(wheelDelta) >= WHEEL_STEP) {
+            step(Math.sign(wheelDelta));
+            wheelDelta = 0;
+            wheelLockedUntil = now + WHEEL_COOLDOWN_MS;
+        }
+    }, { passive: false });
+
+    const PAGE_KEYS = {
+        ArrowDown: 1,
+        ArrowRight: 1,
+        PageDown: 1,
+        ArrowUp: -1,
+        ArrowLeft: -1,
+        PageUp: -1,
+    };
+
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && (active || showTimer)) {
+        if (!active && !showTimer) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
             const toggle = active?.toggle;
 
             hide();
             toggle?.focus();
+
+            return;
+        }
+
+        if (active && PAGE_KEYS[event.key] && !event.altKey && !event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            step(PAGE_KEYS[event.key]);
         }
     });
 
-    window.addEventListener('scroll', () => {
-        if (active || showTimer) {
+    window.addEventListener('scroll', (event) => {
+        // Scrolling the long details inside the preview is fine; scrolling the Index closes it.
+        if ((active || showTimer) && !isInsideLayer(event.target)) {
             hide();
         }
     }, { capture: true, passive: true });
 
-    window.addEventListener('resize', position, { passive: true });
-
-    reducedMotion.addEventListener?.('change', () => {
-        if (reducedMotion.matches) {
-            stopSlides();
-        }
-    });
-
     const registerLivewireHooks = () => {
-        // Search, sorting, filters and paging all re-render the table: drop the old card, slides and data.
+        // Search, sorting, filters and paging all re-render the table: drop the old preview and data.
         window.Livewire.hook('commit', ({ component, succeed }) => {
             if (component?.name && component.name !== 'product-index') {
                 return;

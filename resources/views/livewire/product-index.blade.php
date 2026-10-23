@@ -448,11 +448,14 @@
         </div>
 
         @if ($hoverPreviewEnabled)
-            <div id="index-hover-preview" class="index-hover-preview" role="tooltip" hidden wire:ignore
+            <div id="index-hover-preview" class="index-hover-preview" role="dialog" aria-modal="false"
+                aria-label="{{ __('Hover Preview') }}" hidden wire:ignore
                 data-label-code="{{ __('Work code') }}" data-label-makers="{{ __('Circle / Brand') }}"
                 data-label-formats="{{ __('Product Format') }}" data-label-tags="{{ __('Tags') }}"
                 data-label-description="{{ __('Summary') }}"
-                data-label-images="{{ __('Sample images: :count') }}"
+                data-label-scroll="{{ __('Scroll to change images') }}"
+                data-label-previous="{{ __('Previous image') }}" data-label-next="{{ __('Next image') }}"
+                data-label-close="{{ __('Close') }}" data-label-no-image="{{ __('No image') }}"
                 data-label-loading="{{ __('Loading preview...') }}"
                 data-label-error="{{ __('The preview could not be loaded.') }}"></div>
 

@@ -263,7 +263,7 @@ Covers the Image Viewer option and Index viewer rendering/data:
 Covers the Hover Preview option and its per-work data:
 - default, save, reset, and independence from the Image Viewer option
 - conditional markup/script output, unchanged cover links, and coexistence with the Image Viewer
-- full details while Index fields are hidden, hidden-tag exclusion, sample-only images, description language preference and excerpt length
+- full details while Index fields are hidden, hidden-tag exclusion, cover-first image pages, description language preference and excerpt length
 - missing-data fallbacks
 - a constant query count regardless of library size
 - translated labels without translating work titles
@@ -684,15 +684,14 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 
 ### Hover Preview
 
-- Enable Hover Preview, rest on an Index cover, and confirm the card shows only the saved details that exist.
-- Confirm the card opens below or above the hovered row and does not cover its title.
-- Confirm sample images cycle on the cover, stop when the pointer leaves, and the cover returns.
-- Save a missing sample path and confirm it is skipped, not counted, and requested only once.
-- Confirm clicking the cover still opens the Image Viewer or DLsite link and closes the card.
-- Confirm keyboard focus shows the card and `Escape` closes it.
-- On a touch device, confirm the info button opens and closes the card.
-- Search, sort, and change pages while a card is open and confirm no previous card or slideshow remains.
-- With "reduce motion" enabled, confirm the card appears without cycling images.
+- Enable Hover Preview, rest on an Index cover, and confirm the near full-page preview shows the cover first and only the saved details that exist.
+- Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
+- Confirm moving the pointer onto the dimmed edge closes the preview.
+- Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.
+- Confirm a quick click on the cover still opens the Image Viewer or DLsite link.
+- Confirm keyboard focus opens the preview, arrow keys change images, and `Escape` closes it.
+- On a touch device, confirm the info button opens the preview, the arrow buttons change images, and the close button closes it.
+- Search, sort, and change pages, then confirm no previous preview remains.
 
 ### Cover / Sample Image Editor
 

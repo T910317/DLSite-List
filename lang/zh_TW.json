@@ -913,7 +913,7 @@
     "Hover Preview": "懸浮預覽",
     "Choose whether resting on a cover shows a quick preview from saved data.": "選擇滑鼠停在封面上時，是否用已儲存的資料顯示快速預覽。",
     "Show work details and sample images when hovering a cover": "滑鼠停在封面時顯示作品資訊和預覽圖片",
-    "When enabled, resting on an Index cover shows saved work details and cycles through saved sample images. Clicking the cover still works as before.": "開啟後，滑鼠停在列表封面上會顯示已儲存的作品資訊，並輪流播放已儲存的預覽圖片。點擊封面的功能維持不變。",
+    "When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.": "開啟後，滑鼠停在列表封面上會放大顯示已儲存的封面、預覽圖片和作品資訊，用滑鼠滾輪切換圖片。點擊封面的功能維持不變。",
     "Save hover preview setting": "儲存懸浮預覽設定",
     "Hover preview setting saved.": "已儲存懸浮預覽設定。",
     "Hover preview setting reset to default.": "懸浮預覽設定重設為預設值。",
@@ -922,7 +922,7 @@
     "Work code": "作品代碼",
     "Circle / Brand": "社團／品牌",
     "Summary": "簡介摘要",
-    "Sample images: :count": "預覽圖片：:count 張",
+    "Scroll to change images": "滾輪切換圖片",
     "Loading preview...": "正在載入預覽...",
     "The preview could not be loaded.": "無法載入預覽。"
 }

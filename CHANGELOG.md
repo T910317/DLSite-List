@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-* Added an optional Index Hover Preview that shows saved work details and cycles through saved sample images when resting on a cover.
+* Added an optional Index Hover Preview that opens a large view of the saved cover, sample images, and work details when resting on a cover; the mouse wheel changes images.
 
 ## 2.1.0 - 2026-10-22
 

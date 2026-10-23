@@ -1,6 +1,6 @@
 <div>
     <form wire:submit.prevent="save" class="option-form">
-        <x-options.switch wire:model.live="enabled" :help="__('When enabled, resting on an Index cover shows saved work details and cycles through saved sample images. Clicking the cover still works as before.')">
+        <x-options.switch wire:model.live="enabled" :help="__('When enabled, resting on an Index cover opens a large preview with the saved cover, sample images, and work details. Scroll the mouse wheel to change images. Clicking the cover still works as before.')">
             {{ __('Show work details and sample images when hovering a cover') }}
         </x-options.switch>
 

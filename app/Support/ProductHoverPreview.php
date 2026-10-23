@@ -44,6 +44,7 @@ final readonly class ProductHoverPreview
             'product_format',
             'description',
             'description_english',
+            'work_image',
             'sample_images',
         ]);
 
@@ -59,9 +60,13 @@ final readonly class ProductHoverPreview
             'formats' => array_values(ProductFormat::labelsFor($product->product_format ?? [])),
             'tags' => $this->tags($id, $settings),
             'description' => $this->descriptionExcerpt($product),
+            // Preview pages: the saved cover first, then the saved sample images.
             'images' => array_values(array_map(
                 fn(string $path): string => asset(Product::versionedImagePath($path)),
-                array_filter($product->sample_images ?? [], fn(mixed $path): bool => is_string($path) && filled($path)),
+                array_filter(
+                    [$product->work_image, ...($product->sample_images ?? [])],
+                    fn(mixed $path): bool => is_string($path) && filled($path),
+                ),
             )),
         ];
     }

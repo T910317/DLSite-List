@@ -114,7 +114,9 @@ class IndexHoverPreviewTest extends TestCase
 
         $card = $xpath->query('//*[@id="index-hover-preview"]');
         $this->assertCount(1, $card);
-        $this->assertSame('tooltip', $card->item(0)->getAttribute('role'));
+        $this->assertSame('dialog', $card->item(0)->getAttribute('role'));
+        $this->assertSame('false', $card->item(0)->getAttribute('aria-modal'));
+        $this->assertSame('Scroll to change images', $card->item(0)->getAttribute('data-label-scroll'));
         $this->assertTrue($card->item(0)->hasAttribute('hidden'));
         $this->assertSame('Work code', $card->item(0)->getAttribute('data-label-code'));
 
@@ -219,11 +221,11 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertSame(['HOVER_VISIBLE_TAG'], $preview['tags']);
         // English UI prefers the saved English description; nothing is translated.
         $this->assertSame('English summary', $preview['description']);
-        // Only saved sample images rotate; the cover stays the resting image.
-        $this->assertCount(2, $preview['images']);
-        $this->assertStringContainsString('sample_1.jpg?v=', $preview['images'][0]);
-        $this->assertStringContainsString('sample_2.png?v=', $preview['images'][1]);
-        $this->assertStringNotContainsString('cover.jpg', implode(' ', $preview['images']));
+        // Preview pages start with the cover, followed by the saved sample images.
+        $this->assertCount(3, $preview['images']);
+        $this->assertStringEndsWith('storage/Works/RJ200000005/cover.jpg', $preview['images'][0]);
+        $this->assertStringContainsString('sample_1.jpg?v=', $preview['images'][1]);
+        $this->assertStringContainsString('sample_2.png?v=', $preview['images'][2]);
 
         Option::setUiLanguage(UiLanguage::Japanese);
         app()->setLocale(UiLanguage::Japanese->value);
@@ -250,6 +252,7 @@ class IndexHoverPreviewTest extends TestCase
             'product_format' => null,
             'description' => null,
             'description_english' => '   ',
+            'work_image' => null,
             'sample_images' => null,
         ]);
 
