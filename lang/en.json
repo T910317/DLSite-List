@@ -928,5 +928,12 @@
     "Summary": "Summary",
     "Scroll to change images": "Scroll to change images",
     "Loading preview...": "Loading preview...",
-    "The preview could not be loaded.": "The preview could not be loaded."
+    "The preview could not be loaded.": "The preview could not be loaded.",
+    "Other editions": "Other editions",
+    "Original": "Original",
+    "Language edition": "Language edition",
+    "Other version": "Other version",
+    "Translation": "Translation",
+    "Other editions of this work are already in your library:": "Other editions of this work are already in your library:",
+    "Not in your library": "Not in your library"
 }

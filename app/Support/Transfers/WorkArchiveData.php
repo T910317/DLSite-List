@@ -48,6 +48,7 @@ final class WorkArchiveData
         'work_name_masked',
         'title_name',
         'title_name_masked',
+        'related_editions',
     ];
 
     private const CUSTOM_FIELDS = [
@@ -175,6 +176,8 @@ final class WorkArchiveData
         Validator::make($document, [
             ...LibraryWorkValidator::productFormatRules('japanese.product_format'),
             ...LibraryWorkValidator::productFormatRules('english.product_format'),
+            ...LibraryWorkValidator::relatedEditionsRules('japanese.related_editions'),
+            ...LibraryWorkValidator::relatedEditionsRules('english.related_editions'),
             'japanese.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
             'english.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
             'dlsite_list.site_id' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/\A[a-z][a-z0-9_-]*\z/'],
@@ -234,6 +237,10 @@ final class WorkArchiveData
         }
         if ($this->hasEither($document, 'product_format')) {
             $details['product_format'] = $work->productFormat === [] ? null : $work->productFormat;
+        }
+        // Archives made before edition links existed leave the stored links untouched.
+        if ($this->hasEither($document, 'related_editions')) {
+            $details['related_editions'] = $work->relatedEditions;
         }
         if ($this->hasEither($document, 'announce_date')) {
             $details['announce_date'] = $work->announceDate;
@@ -319,6 +326,7 @@ final class WorkArchiveData
             'work_name_masked' => $title,
             'title_name' => $product->series,
             'title_name_masked' => $product->series,
+            'related_editions' => $product->related_editions,
         ];
 
         return Arr::only($values, self::DLSITE_FIELDS);

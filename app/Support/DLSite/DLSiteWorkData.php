@@ -4,6 +4,7 @@ namespace App\Support\DLSite;
 
 use App\Enums\ProductContributorRole;
 use App\Enums\ProductFormat;
+use App\Support\RelatedEditions;
 
 final readonly class DLSiteWorkData
 {
@@ -29,6 +30,8 @@ final readonly class DLSiteWorkData
         public array $contributorsByRole,
         // Null when the fetch result has no Traditional Chinese locale, such as older scraper output.
         public ?array $traditionalChineseGenres = null,
+        /** @var list<array{code: string, type: string, label: ?string}>|null Null when editions are unknown. */
+        public ?array $relatedEditions = null,
     ) {}
 
     public static function fromArray(array $workData, ?string $fallbackProductId = null): self
@@ -68,6 +71,7 @@ final readonly class DLSiteWorkData
             sampleImages: self::list($japanese['sample_images'] ?? []),
             contributorsByRole: self::contributorsByRole($japanese, $english),
             traditionalChineseGenres: $traditionalChinese === null ? null : self::list($traditionalChinese['genre'] ?? []),
+            relatedEditions: RelatedEditions::fromWorkData($japanese, $english, $productId),
         );
     }
 

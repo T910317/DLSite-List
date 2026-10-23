@@ -177,6 +177,8 @@ final class RefetchService
                 'warnings' => $warnings,
                 'error' => null,
             ])->save();
+
+            $this->storeRelatedEditions($product, $fetch->workData->relatedEditions);
         } catch (Throwable $exception) {
             $this->recordFailedResult($result, $this->cleanErrorMessage($exception));
 
@@ -184,6 +186,23 @@ final class RefetchService
         }
 
         $this->refreshRunProgress($run);
+    }
+
+    /**
+     * Edition links are DLsite metadata the user never edits, so they are kept current
+     * without going through review. Unknown editions (null) keep the stored links.
+     *
+     * @param  list<array{code: string, type: string, label: ?string}>|null  $editions
+     */
+    private function storeRelatedEditions(Product $product, ?array $editions): void
+    {
+        if ($editions === null || $product->related_editions === $editions) {
+            return;
+        }
+
+        $product->timestamps = false;
+        $product->related_editions = $editions;
+        $product->save();
     }
 
     public function recordFailedResult(RefetchWorkResult $result, string $error): void

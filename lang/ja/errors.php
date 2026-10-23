@@ -158,6 +158,7 @@ return [
     'Cover image download failed after five attempts.' => '5回試行してもカバー画像をダウンロードできませんでした。',
     'Sample image download failed after five attempts: :images' => '5回試行してもサンプル画像をダウンロードできませんでした: :images',
     'DLsite data was fetched, but these images could not be downloaded: :images' => 'DLsite情報は取得できましたが、次の画像をダウンロードできませんでした: :images',
+    'Other editions of this work are already in your library: :works' => 'ライブラリにはこの作品の別バージョンが既にあります: :works',
     'Archive images are incomplete. You can import only available images.' => 'アーカイブ内の画像が不完全です。利用可能な画像のみインポートできます。',
     'Use a positive CSS length with one of the supported units.' => '対応している単位を付けた正のCSS長を入力してください。',
     'Enter a tag title.' => 'タグ名を入力してください。',

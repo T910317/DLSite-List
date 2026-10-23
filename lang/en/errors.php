@@ -158,6 +158,7 @@ return [
     'Cover image download failed after five attempts.' => 'Cover image download failed after five attempts.',
     'Sample image download failed after five attempts: :images' => 'Sample image download failed after five attempts: :images',
     'DLsite data was fetched, but these images could not be downloaded: :images' => 'DLsite data was fetched, but these images could not be downloaded: :images',
+    'Other editions of this work are already in your library: :works' => 'Other editions of this work are already in your library: :works',
     'Archive images are incomplete. You can import only available images.' => 'Archive images are incomplete. You can import only available images.',
     'Use a positive CSS length with one of the supported units.' => 'Use a positive CSS length with one of the supported units.',
     'Enter a tag title.' => 'Enter a tag title.',

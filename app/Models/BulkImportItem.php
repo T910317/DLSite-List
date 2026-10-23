@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BulkImportItemStatus;
 use App\Support\DLSite\DLSiteFetchResult;
 use App\Support\Localization\ErrorMessage;
+use App\Support\RelatedEditions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -47,6 +48,15 @@ class BulkImportItem extends Model
 
     public function displayWarning(): ?string
     {
-        return DLSiteFetchResult::displayImageFailureMessage($this->warning);
+        if ($this->warning === null || $this->warning === '') {
+            return $this->warning;
+        }
+
+        // A stored warning holds one untranslated message per line.
+        return collect(explode("\n", $this->warning))
+            ->map(fn(string $line): ?string => RelatedEditions::displayWarningMessage(
+                DLSiteFetchResult::displayImageFailureMessage($line),
+            ))
+            ->implode("\n");
     }
 }

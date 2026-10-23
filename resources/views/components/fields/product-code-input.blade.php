@@ -13,6 +13,9 @@
         @if ($errors->has('id'))
             <div class="text-error">{{ $errors->first('id') }}</div>
         @endif
+        {{-- Filled by related-editions-check.js while typing; saving is never blocked. --}}
+        <div class="related-editions-check" data-related-editions-check
+            data-url="{{ route('products.related-editions') }}" aria-live="polite"></div>
         @if ($showDlsiteFetchStatus)
             <div class="dlsite-fetch-status" data-dlsite-fetch-status role="status" aria-live="polite" hidden>
                 {{ __('Data is being fetched...') }}

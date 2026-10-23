@@ -12,6 +12,7 @@ use App\Enums\ProductScore;
 use App\Rules\MaxBytes;
 use App\Rules\ValidPartialDate;
 use App\Rules\ValidProductFormat;
+use App\Support\RelatedEditions;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -31,6 +32,10 @@ final class LibraryWorkValidator
             data_set($data, 'details.product_format', ProductFormat::normalizeStoredValues(data_get($data, 'details.product_format')));
         }
 
+        if (is_array(data_get($data, 'details.related_editions'))) {
+            data_set($data, 'details.related_editions', RelatedEditions::normalize(data_get($data, 'details.related_editions'), $data['product_code']));
+        }
+
         return $data;
     }
 
@@ -40,6 +45,18 @@ final class LibraryWorkValidator
         return [
             $field => ['sometimes', 'nullable', 'array', 'list', 'max:50'],
             $field . '.*' => ['required', new ValidProductFormat],
+        ];
+    }
+
+    /** @return array<string, list<mixed>> */
+    public static function relatedEditionsRules(string $field): array
+    {
+        return [
+            $field => ['sometimes', 'nullable', 'array', 'list', 'max:' . RelatedEditions::MAX_EDITIONS],
+            $field . '.*' => ['required', 'array:code,type,label'],
+            $field . '.*.code' => ['required', 'string', 'max:191', 'regex:/\A(?:RJ|BJ|VJ)\d+\z/i'],
+            $field . '.*.type' => ['required', Rule::in(RelatedEditions::TYPES)],
+            $field . '.*.label' => ['sometimes', 'nullable', 'string', 'max:255'],
         ];
     }
 
@@ -77,6 +94,7 @@ final class LibraryWorkValidator
             'details.age_category' => ['sometimes', 'nullable', Rule::enum(ProductAgeCategory::class)],
             'details.site_id' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/\A[a-z][a-z0-9_-]*\z/'],
             ...self::productFormatRules('details.product_format'),
+            ...self::relatedEditionsRules('details.related_editions'),
             'details.announce_date' => ['sometimes', 'nullable', 'date'],
             'details.notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'listening' => ['sometimes', 'array:' . implode(',', LibraryData::FIELDS['listening'])],

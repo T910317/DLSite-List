@@ -41,6 +41,7 @@ Route::controller(ProductController::class)->group(function () {
     // Add custom work
     Route::get('/create/custom', 'create_custom')->name('products.create.custom');
     Route::post('/store/custom', 'store_custom')->name('products.store.custom');
+    Route::get('/related-editions', 'relatedEditions')->name('products.related-editions');
 
     // Tag Library
     Route::get('/tags', 'tagLibrary')->name('tags.index');

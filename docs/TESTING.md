@@ -198,7 +198,7 @@ Covers Refetch queue failure recovery, cancellation, continued processing after 
 
 #### `tests/Feature/BulkImportTest.php`
 
-Covers Bulk Import parsing/validation, shared-input snapshots, queued item processing, skips/failures, transactional persistence (including failed completion writes, worker interruption before commit, and stale item/run state), and run completion. Product Format coverage verifies fetched values when the field is hidden or blank and manual override behavior when a visible value is supplied. Also verifies announcement dates and Site IDs are saved by the shared importer, Traditional Chinese fetched tags are stored in their own language bucket, and failed cover/sample downloads are omitted from persisted image references.
+Covers Bulk Import parsing/validation, shared-input snapshots, queued item processing, skips/failures, transactional persistence (including failed completion writes, worker interruption before commit, and stale item/run state), and run completion. Product Format coverage verifies fetched values when the field is hidden or blank and manual override behavior when a visible value is supplied. Also verifies announcement dates and Site IDs are saved by the shared importer, Traditional Chinese fetched tags are stored in their own language bucket, and failed cover/sample downloads are omitted from persisted image references. Other-edition warnings are stored with image warnings and localized line by line.
 
 Busy-start coverage checks the wrapped cache lock timeout and ensures unrelated dispatch exceptions with the same message are not misclassified as lock contention.
 
@@ -225,6 +225,14 @@ Covers multipart upload/validation, missing or replacement parts, archive/path/c
 Covers Ignore/Overwrite/Merge decisions, work/tag/group/relationship/option application, stale-conflict handling, atomic work updates, image promotion/recovery, timestamps, and read-only completed reviews. Work-review navigation checks category identifiers and the items returned when switching repeat-field tabs.
 
 Partial contributor document coverage verifies that omitted roles survive Overwrite and explicitly empty roles can still be cleared. Announcement-date review checks use matching date formats for unchanged imported values.
+
+#### `tests/Feature/RelatedEditionsTest.php`
+
+Covers other-edition links: storing DLsite links on import, warnings when the new work lists a library work, when a library work lists the new code, and for two translations of one original, no warning for unrelated works, the Index popup and modal completion page, Custom Quick Add, the Create-page check endpoint (including pasted DLsite links), Refetch updates that keep `updated_at` and keep stored links when the lookup fails, and the Edit page list with local and DLsite links.
+
+#### `tests/Feature/RelatedEditionsTransferTest.php`
+
+Covers export/import round trips of edition links (including `null`), review and Overwrite of changed links for an existing work, archives created before the field existed, and quarantine of invalid links.
 
 #### `tests/Feature/LibraryTransferLifecycleTest.php`
 
@@ -585,6 +593,9 @@ Covers server-rendered Add/Edit modal completion fallback output and conditional
 `tests/Unit/Support/DLSite/DLSiteWorkDataTest.php`
 - Covers shared scraped metadata extraction for titles/descriptions/creators/maker data (Circle, Publisher, and Brand remain independent), Product Format normalization, announcement-date and site-id locale fallback, product ids, and missing-id errors, and the optional Traditional Chinese genre list (null when the locale is absent).
 
+`tests/Unit/Support/RelatedEditionsTest.php`
+- Covers mapping DLsite language editions, versions, and translation links, normalization (invalid codes, duplicates, the work's own code), and keeping unknown editions (`null`) apart from none (`[]`).
+
 `tests/Unit/Support/DLSite/DLSiteWorkFetcherTest.php`
 - Covers the PHP-owned five-attempt retry loop, manifest/JSON validation, partial results, immediate success, and rejection of stale JSON fallback.
 
@@ -627,6 +638,7 @@ Covers Python scraper Product Format handling:
 - additional-option ordering
 - stable DLsite enum-code serialization
 - age-category serialization after the `dlsite-async` upgrade
+- raw DLsite edition links, and `None` when the edition lookup fails
 
 #### `python/tests/test_weekly_logging.py`
 

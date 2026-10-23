@@ -928,5 +928,12 @@
     "Summary": "あらすじ",
     "Scroll to change images": "ホイールで画像を切り替え",
     "Loading preview...": "プレビューを読み込んでいます...",
-    "The preview could not be loaded.": "プレビューを読み込めませんでした。"
+    "The preview could not be loaded.": "プレビューを読み込めませんでした。",
+    "Other editions": "他の版",
+    "Original": "原作",
+    "Language edition": "言語版",
+    "Other version": "別バージョン",
+    "Translation": "翻訳版",
+    "Other editions of this work are already in your library:": "ライブラリにはこの作品の別バージョンが既にあります:",
+    "Not in your library": "ライブラリにありません"
 }

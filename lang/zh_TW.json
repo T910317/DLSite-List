@@ -928,5 +928,12 @@
     "Summary": "簡介摘要",
     "Scroll to change images": "滾輪切換圖片",
     "Loading preview...": "正在載入預覽...",
-    "The preview could not be loaded.": "無法載入預覽。"
+    "The preview could not be loaded.": "無法載入預覽。",
+    "Other editions": "其他版本",
+    "Original": "原版",
+    "Language edition": "語言版",
+    "Other version": "不同版本",
+    "Translation": "翻譯版",
+    "Other editions of this work are already in your library:": "收藏裡已有這部作品的其他版本：",
+    "Not in your library": "不在收藏裡"
 }

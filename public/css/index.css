@@ -44,6 +44,43 @@ body.product-index-page {
     line-height: 1;
 }
 
+/* Other editions notice after adding a work; kept at the bottom so it never covers the image warning. */
+.related-editions-popup {
+    position: fixed;
+    z-index: 10000;
+    bottom: 18px;
+    left: 50%;
+    display: flex;
+    width: min(680px, calc(100vw - 32px));
+    box-sizing: border-box;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 12px 16px;
+    transform: translateX(-50%);
+    border: 1px solid #FCD34D;
+    border-radius: 8px;
+    background-color: #FEF3C7;
+    box-shadow: 0 8px 24px rgba(146, 64, 14, 0.2);
+    color: #92400E;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.related-editions-popup .related-editions-warning__list {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+
+.related-editions-popup a {
+    color: inherit;
+    font-weight: bold;
+}
+
+.related-editions-popup .related-editions-warning__work-title {
+    margin-left: 4px;
+}
+
 .product-index-page footer {
     flex-shrink: 0;
 }

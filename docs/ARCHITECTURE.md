@@ -56,6 +56,12 @@ Hover Preview data is not loaded with the table. When a cover is hovered or focu
 7. `DLSiteProductImporter` creates the Product, persists only successfully downloaded cover/sample image paths, and synchronizes tags/contributors.
 8. The created work returns to the appropriate Index destination.
 
+#### Other Editions
+
+DLsite links some works to other editions under different product codes: language editions, translations of an original, and versions such as Windows/Mac/Android. The scraper reads these links from DLsite's `product/info/ajax` (`translation_info`) and `api/=/product.json` (`language_editions`, `editions`) responses, because `dlsite-async` drops them, and adds them as `dlsite_editions`. `RelatedEditions` normalizes them into `products.related_editions` (`code`, `type`, `label`). `null` means the links were never fetched; `[]` means DLsite reported none. When the lookup fails, the scraper leaves `dlsite_editions` out so stored links are kept. Editions are not guessed from titles, so a version that the circle did not register on DLsite is not linked.
+
+Adding a work is never blocked. `RelatedEditions::inLibrary()` finds library works that the new work lists, works that list the new code, and works that share a listed edition (for example two translations of one original) in one JSON query. The Create page checks the typed code through `GET /related-editions` before saving; that check covers works already in the library that list the code. After a DLsite import, the full check, including the new work's own links, is shown on the Index (or the modal completion page, which then stays open). Bulk Import stores the warning on the item next to any image warning. The Edit page lists every edition, linking to the local work when it is in the library and to DLsite otherwise.
+
 A failed cover download is stored as no cover, and failed sample downloads are omitted from the saved sample list. The fetcher can retry a failed DLsite fetch up to five times. Python does not own a second retry loop.
 
 The Quick Add field layout controls which user-editable override rows are submitted. Hidden DLsite metadata such as age, product format, circle, publisher, brand, contributors, and descriptions can still be populated from scraped data.
@@ -73,6 +79,8 @@ Custom Quick Add:
 - stores only submitted visible optional metadata because there is no scraped fallback
 
 Custom Quick Add and Edit keep newly selected image files in the browser until Save. Previews use browser object URLs, while removal/reordering state is represented by the form and submitted through the normal multipart request. `ProductImageSubmission` converts that submitted state into the final cover/sample image set and delegates filesystem-changing saves to `ProductImagePromotion`. Existing-image removal/order can be restored through Laravel old input after validation; newly selected local files must be selected again after a full redirect.
+
+Custom works have no DLsite edition links of their own, but Custom Quick Add still warns when a library work lists the new code.
 
 Custom works still use the normal product/tag/contributor model and can participate in the library and Refetch selection workflow.
 
@@ -177,6 +185,8 @@ Refetch updates scraped DLsite-owned data without immediately overwriting the ex
 
 Refetch has eighteen ordered review categories defined by `RefetchCategory`.
 
+Other-edition links are DLsite metadata that users do not edit, so Refetch stores them as soon as a work is fetched, without changing `updated_at` or adding a review category. A failed edition lookup keeps the stored links.
+
 Cover and sample-image changes are independent. Refetch uses the shared `ProductImagePromotion` boundary so interrupted image replacement can be recovered safely.
 
 Refetch creation, cleanup, and review application use the shared `LibraryMutationLock`, which also serializes Import apply and work-image cleanup.
@@ -210,6 +220,8 @@ The import flow is:
 Transfer jobs use persisted checkpoints and operation/validation tokens so retries can resume work and stale queued jobs cannot publish or apply obsolete state. Same-direction unfinished runs are superseded, while completed runs remain historical.
 
 Each bounded export planning phase locks and rechecks the run, then commits inventory/part changes, its checkpoint, and the successor job in one database transaction. Cancellation waits for the current batch. Staged JSON paths are deterministic and can be overwritten on retry after a rollback.
+
+Work archives store other-edition links as `related_editions` in both locale documents. Archives created before the field existed leave the stored links unchanged, and `null` (never fetched) stays distinct from an empty list.
 
 Partial work imports include only contributor roles explicitly present in either language document. Omitted roles are preserved; explicitly empty roles can be cleared with Overwrite.
 
