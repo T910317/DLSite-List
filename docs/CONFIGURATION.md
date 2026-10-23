@@ -11,7 +11,23 @@ For test setup, commands, and the current tests, see [TESTING.md](TESTING.md).
 
 Docker is the recommended self-hosted setup.
 
-Requires [Docker Engine 26.0+](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose).
+需要 [Docker Engine 28.0.0+](https://docs.docker.com/engine) 與 [Docker Compose 2.34.0+](https://docs.docker.com/compose)。
+
+#### 安全存取與升級
+
+`compose.yaml` 與 `compose.dev.yaml` 都將 HTTP 入口固定為 `127.0.0.1:8080:80`，只供 Docker 主機本機使用；驗證仍預設關閉。這保留同機開啟 `http://localhost:8080` 的流程，同網段其他設備則不應直接連入。僅發布 IPv4 loopback，未另開 IPv6 入口。
+
+Docker 官方指出，[28.0.0 以前的版本可能讓同一 L2 網段設備連入發布於 localhost 的連接埠](https://docs.docker.com/engine/network/port-publishing/)。既有安裝需先升級 Docker Engine，再套用修補後的 Compose 並重新建立 `web` 容器，最後確認實際發布位址為 `127.0.0.1:8080`。修改檔案不會自動更新已執行的容器；舊版 GHCR Compose 套件也不會因修改本機原始碼而更新。Compose 本身不會強制檢查 Engine 最低版本。
+
+若 Docker 跑在另一台主機，保留 loopback 綁定，從自己的電腦建立 SSH tunnel：
+
+```bash
+ssh -N -L 127.0.0.1:18080:127.0.0.1:8080 user@server
+```
+
+將 `user@server` 換成有 SSH 權限的帳號與主機，然後在自己電腦開啟 `http://127.0.0.1:18080`；跨網路流量由 SSH 加密。首次設定管理員也可透過此入口完成。
+
+如需用反向代理提供遠端網站，先透過本機或 SSH tunnel 完成管理員設定並啟用登入驗證，再配置 HTTPS 與安全的 session cookie（`SESSION_SECURE_COOKIE=true`）；不要把匿名 HTTP 入口改回所有介面發布。自行加入的代理、Compose override、主機轉送或手動安裝不受上述預設綁定保護，必須另外驗證其存取與加密邊界。本機使用者、程序及同一 Docker 網路內的容器仍屬可信任範圍。
 
 #### Published Docker Installation
 

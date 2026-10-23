@@ -92,6 +92,8 @@ php artisan test tests/Unit/Logging tests/Unit/Support/DLSite/DLSitePythonRunner
 
 ### Python Tests
 
+`python/tests/test_compose_network.py` 會以 Docker Compose 實際解析兩份部署設定與一般／test profile，確認只發布本機的 web 連接埠，並保留 `8080 -> 80/tcp`。不啟動容器，也不需要 Docker daemon；需在 PATH 提供 `docker compose` 或獨立的 `docker-compose`。缺少工具時本機會明確略過，CI 會先檢查 Compose 是否可用。
+
 Run the project-owned Python `unittest` suite:
 
 ```bash

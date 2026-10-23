@@ -47,6 +47,8 @@ It supports DLsite works with RJ, BJ, and VJ codes - Voice / ASMR, Games, Manga,
 
 ## Quick Start (requires [Docker Compose 2.34.0+](https://docs.docker.com/compose))
 
+Docker Engine 需使用 28.0.0 或更新版本。預設連接埠只綁定 Docker 主機的 `127.0.0.1`；遠端使用與既有安裝的升級注意事項見[安全存取說明](docs/CONFIGURATION.md#安全存取與升級)。
+
 ### 1) Run this command
 
 ```bash

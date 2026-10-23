@@ -104,7 +104,8 @@ services:
         depends_on:
             - "app"
         ports:
-            - 8080:80
+            # 驗證預設關閉；只允許從 Docker 主機本機連線。
+            - "127.0.0.1:8080:80"
 
     # Database
     database:
@@ -178,7 +179,7 @@ services:
     #         database:
     #             condition: service_healthy
     #     ports:
-    #         - 8888:80
+    #         - "127.0.0.1:8888:80"
 
 volumes:
     storage_app:
