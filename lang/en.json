@@ -925,5 +925,8 @@
     "Scroll to change images": "Scroll to change images",
     "Loading preview...": "Loading preview...",
     "The preview could not be loaded.": "The preview could not be loaded.",
-    ":value out of :max": ":value out of :max"
+    ":value out of :max": ":value out of :max",
+    "DLsite rating": "DLsite rating",
+    "DLsite rating count": "DLsite rating count",
+    "★:rating (:count rating)|★:rating (:count ratings)": "★:rating (:count rating)|★:rating (:count ratings)"
 }
