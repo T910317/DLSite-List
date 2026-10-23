@@ -925,10 +925,13 @@
     "Scroll to change images": "滾輪切換圖片",
     "Loading preview...": "正在載入預覽...",
     "The preview could not be loaded.": "無法載入預覽。",
-    ":value out of :max": ":value / :max 分",
+    ":value out of :max": ":value 分（滿分 :max 分）",
     "DLsite rating": "DLsite 評價",
     "DLsite rating count": "DLsite 評價人數",
     "★:rating (:count rating)|★:rating (:count ratings)": "★:rating（:count 人）",
     "(:count rating)|(:count ratings)": "（:count 人）",
-    "My score": "個人分數"
+    "My score": "個人分數",
+    "Ratings": "評分",
+    "DLsite": "DLsite",
+    "Mine": "個人"
 }

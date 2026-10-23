@@ -930,5 +930,8 @@
     "DLsite rating count": "DLsite rating count",
     "★:rating (:count rating)|★:rating (:count ratings)": "★:rating (:count rating)|★:rating (:count ratings)",
     "(:count rating)|(:count ratings)": "(:count rating)|(:count ratings)",
-    "My score": "My score"
+    "My score": "My score",
+    "Ratings": "Ratings",
+    "DLsite": "DLsite",
+    "Mine": "Mine"
 }
