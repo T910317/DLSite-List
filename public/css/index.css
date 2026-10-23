@@ -680,9 +680,9 @@ body.filter-modal-open {
     box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-    width: 100%;
-    max-width: 1600px;
-    height: 100%;
+    /* Leave a wide dimmed edge so moving the pointer off the panel closes it easily. */
+    width: min(1200px, 76vw);
+    height: min(860px, 80vh);
     overflow: hidden;
     border: 1px solid var(--image-viewer-panel-border, #EE9898);
     border-radius: 10px;
@@ -859,6 +859,8 @@ body.filter-modal-open {
     }
 
     .index-hover-preview__panel {
+        width: 100%;
+        height: 100%;
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
     }
