@@ -164,7 +164,8 @@
         parent.append(section);
     };
 
-    const formatNumber = (number) => String(Math.round(number * 10) / 10);
+    // Up to two decimals, so screen readers hear a DLsite average of 4.53 as 4.53, not 4.5.
+    const formatNumber = (number) => String(Math.round(number * 100) / 100);
 
     // Reusable star meter: `value` on a 0..`max` scale drawn as `count` stars, partial stars included,
     // e.g. an own score of 7 / 10 lights 3.5 stars and a DLsite average of 4.3 / 5 lights 4.3 stars.
@@ -201,6 +202,21 @@
         return wrapper;
     };
 
+    const renderDlsiteRating = (rating, countLabel) => {
+        const wrapper = element('span', 'index-hover-preview__score');
+        // As with the own score, the stars announce "4.53 out of 5" and the visible number is hidden from screen readers.
+        const number = element('span', 'index-hover-preview__score-value', rating.toFixed(2));
+        number.setAttribute('aria-hidden', 'true');
+
+        wrapper.append(renderStars(rating, 5), number);
+
+        if (countLabel) {
+            wrapper.append(element('span', 'index-hover-preview__score-label', countLabel));
+        }
+
+        return wrapper;
+    };
+
     const renderPreview = (data) => {
         const stage = element('div', 'index-hover-preview__stage');
         stage.append(element('p', 'index-hover-preview__status', label('labelLoading')));
@@ -226,6 +242,15 @@
 
         if (Number.isFinite(data.score)) {
             appendSection(details, label('labelScore'), renderScore(data.score, data.scoreLabel));
+        }
+
+        // Only works with a saved DLsite average get this row.
+        if (Number.isFinite(data.dlsiteRating)) {
+            appendSection(
+                details,
+                label('labelDlsiteRating'),
+                renderDlsiteRating(data.dlsiteRating, data.dlsiteRatingCountLabel),
+            );
         }
 
         if (data.tags?.length) {

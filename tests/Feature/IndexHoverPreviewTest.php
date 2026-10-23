@@ -269,6 +269,9 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertNull($preview['description']);
         $this->assertNull($preview['score']);
         $this->assertNull($preview['scoreLabel']);
+        $this->assertNull($preview['dlsiteRating']);
+        $this->assertNull($preview['dlsiteRatingCount']);
+        $this->assertNull($preview['dlsiteRatingCountLabel']);
         $this->assertSame([], $preview['images']);
     }
 
@@ -311,6 +314,79 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertSame('(6) Nice', $listening['scoreLabel']);
     }
 
+    public function test_preview_returns_the_dlsite_rating_next_to_the_own_score(): void
+    {
+        Option::setIndexHoverPreviewEnabled(true);
+
+        Product::factory()->create([
+            'id' => 'RJ200000011',
+            'work_name' => 'DLSITE_RATED_WORK',
+            'score' => ProductScore::Eight->value,
+            'dlsite_rating' => 4.53,
+            'dlsite_rating_count' => 1234,
+        ]);
+        Product::factory()->create([
+            'id' => 'RJ200000012',
+            'work_name' => 'ONE_RATING_WORK',
+            'dlsite_rating' => 5,
+            'dlsite_rating_count' => 1,
+        ]);
+
+        $preview = Livewire::test(ProductIndex::class)
+            ->call('hoverPreview', 'RJ200000011')
+            ->effects['returns'][0];
+
+        // The 0-5 average is sent as a number so the card can light 4.53 of 5 stars.
+        $this->assertSame(4.53, $preview['dlsiteRating']);
+        $this->assertSame(1234, $preview['dlsiteRatingCount']);
+        $this->assertSame('(1,234 ratings)', $preview['dlsiteRatingCountLabel']);
+        $this->assertSame(8, $preview['score']);
+
+        $single = app(ProductHoverPreview::class)->build('RJ200000012', Option::productIndexSettings());
+
+        $this->assertSame(5.0, $single['dlsiteRating']);
+        $this->assertSame(1, $single['dlsiteRatingCount']);
+        $this->assertSame('(1 rating)', $single['dlsiteRatingCountLabel']);
+        $this->assertNull($single['score']);
+
+        // The count wording matches the Edit page in each UI language.
+        app()->setLocale(UiLanguage::TraditionalChinese->value);
+
+        $chinese = app(ProductHoverPreview::class)->build('RJ200000011', Option::productIndexSettings());
+
+        $this->assertSame('（1,234 人）', $chinese['dlsiteRatingCountLabel']);
+    }
+
+    public function test_preview_leaves_out_the_dlsite_rating_when_none_is_saved(): void
+    {
+        Option::setIndexHoverPreviewEnabled(true);
+
+        Product::factory()->create([
+            'id' => 'RJ200000013',
+            'work_name' => 'OWN_SCORE_ONLY_WORK',
+            'score' => ProductScore::Seven->value,
+            'dlsite_rating' => null,
+            'dlsite_rating_count' => null,
+        ]);
+        // A stray average without a count is treated as no rating, the same as import and Refetch.
+        Product::factory()->create([
+            'id' => 'RJ200000014',
+            'work_name' => 'HALF_RATING_WORK',
+            'dlsite_rating' => 4.2,
+            'dlsite_rating_count' => null,
+        ]);
+
+        foreach (['RJ200000013', 'RJ200000014'] as $id) {
+            $preview = app(ProductHoverPreview::class)->build($id, Option::productIndexSettings());
+
+            $this->assertNull($preview['dlsiteRating'], $id);
+            $this->assertNull($preview['dlsiteRatingCount'], $id);
+            $this->assertNull($preview['dlsiteRatingCountLabel'], $id);
+        }
+
+        $this->assertSame(7, app(ProductHoverPreview::class)->build('RJ200000013', Option::productIndexSettings())['score']);
+    }
+
     public function test_preview_query_count_does_not_grow_with_the_library(): void
     {
         Option::setIndexHoverPreviewEnabled(true);
@@ -318,6 +394,8 @@ class IndexHoverPreviewTest extends TestCase
         foreach (range(1, 40) as $number) {
             $product = Product::factory()->create([
                 'id' => 'RJ3' . str_pad((string) $number, 8, '0', STR_PAD_LEFT),
+                'dlsite_rating' => 4.25,
+                'dlsite_rating_count' => $number,
             ]);
             $genre = Genre::query()->create(['title' => "BULK_TAG_{$number}", 'description' => null]);
             app(ProductGenreSync::class)->syncCustom($product, [$genre->getKey()]);
@@ -332,6 +410,8 @@ class IndexHoverPreviewTest extends TestCase
         DB::disableQueryLog();
 
         $this->assertSame(['BULK_TAG_7'], $preview['tags']);
+        $this->assertSame(4.25, $preview['dlsiteRating']);
+        $this->assertSame(7, $preview['dlsiteRatingCount']);
         $this->assertLessThanOrEqual(6, count($queries));
 
         foreach ($queries as $query) {
@@ -354,6 +434,7 @@ class IndexHoverPreviewTest extends TestCase
             ->assertSee('data-label-makers="社團／品牌"', false)
             ->assertSee('data-label-description="簡介摘要"', false)
             ->assertSee('data-label-score="分數"', false)
+            ->assertSee('data-label-dlsite-rating="DLsite 評價"', false)
             ->assertSee('data-label-rating=":value / :max 分"', false)
             ->assertSee('顯示 作品名稱不翻譯 的作品預覽', false);
 
