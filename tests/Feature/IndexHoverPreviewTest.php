@@ -332,6 +332,8 @@ class IndexHoverPreviewTest extends TestCase
         $this->assertSame(1234, $preview['dlsiteRatingCount']);
         $this->assertSame('(1,234 ratings)', $preview['dlsiteRatingCountLabel']);
         $this->assertSame(8, $preview['score']);
+        // Both rows show only stars and numbers, so neither sends score wording.
+        $this->assertArrayNotHasKey('scoreLabel', $preview);
 
         $single = app(ProductHoverPreview::class)->build('RJ200000012', Option::productIndexSettings());
 

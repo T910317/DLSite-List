@@ -940,6 +940,11 @@ body.filter-modal-open {
     font-weight: bold;
 }
 
+/* DLsite rating count, e.g. "(57 ratings)", kept quieter than the average. */
+.index-hover-preview__rating-count {
+    opacity: .8;
+}
+
 .index-hover-preview__status {
     margin: 0;
     opacity: .8;

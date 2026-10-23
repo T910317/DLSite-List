@@ -10,7 +10,7 @@ All notable changes to this project are documented in this file.
 * Added Traditional Chinese fetched tags. New and refetched works store DLsite's Traditional Chinese tags, and the Traditional Chinese UI now shows them by default. Works without Traditional Chinese tags fall back to their English tags (or Japanese tags when there are no English ones) until they are refetched.
 * Added links between other editions of a work (language editions, translations, and versions such as Windows/Mac) as reported by DLsite. The Edit page lists them, and adding a work shows a warning when another edition is already in your library. Saving is never blocked.
 * Added the DLsite average rating and rating count. They are saved when a work is added, kept current by Refetch, included in Import / Export, and shown read-only on the Edit page.
-* Hover Preview also shows the saved DLsite average rating as stars with its rating count, next to the own score.
+* Hover Preview also shows the saved DLsite average rating in a DLsite rating row below My score, in the same style: stars and the average (for example `4.96`, without `/ 5`), followed by the rating count.
 * The Index shows the DLsite rating and your own score as two rows of stars with their numbers, for example `DLsite ★★★★★ 4.96` and `Mine ★★★★½ 9`. A row is shown only when there is a value.
 
 ### Changed
