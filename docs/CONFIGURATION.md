@@ -559,7 +559,7 @@ Hiding the Image field does not reset the saved Image Viewer option.
 Default: disabled.
 
 When enabled:
-- resting on an Index cover (or focusing it with the keyboard) for about 300 ms opens a large preview: the saved cover and sample images on one side, and the saved title, work code, Circle/Brand, Product Format, own score (5 stars, half stars allowed, with the number out of 10 and its score label), visible tags, and a short description excerpt on the other; works without a score show no score row
+- resting on an Index cover (or focusing it with the keyboard) for about 300 ms opens a large preview: the saved cover and sample images on one side, and the saved title, work code, Circle/Brand, Product Format, My score (your own 1-10 score as 5 stars, half stars allowed, followed by the number, so a 9 shows 4.5 lit stars and `9`), visible tags, and a short description excerpt on the other; works without a score show no My score row
 - the saved DLsite average rating appears on its own row next to the score (5 stars lit to the 0-5 average, the average with two decimals, and the rating count); works without a saved DLsite rating show no DLsite rating row
 - images do not change on their own: the mouse wheel, arrow keys, or the previous/next buttons move between them, and the Index underneath does not scroll
 - moving the pointer off the preview onto the dimmed edge, clicking the edge, the close button, or `Escape` closes it

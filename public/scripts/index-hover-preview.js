@@ -187,17 +187,14 @@
         return meter;
     };
 
-    const renderScore = (score, scoreLabel) => {
+    // Stars followed by the bare number: a score of 9 lights 4.5 stars and shows "9".
+    const renderScore = (score) => {
         const wrapper = element('span', 'index-hover-preview__score');
-        // The stars already announce "7 out of 10"; the visible number is for sighted readers only.
-        const number = element('span', 'index-hover-preview__score-value', `${score} / 10`);
+        // The stars already announce "9 out of 10"; the visible number is for sighted readers only.
+        const number = element('span', 'index-hover-preview__score-value', formatNumber(score));
         number.setAttribute('aria-hidden', 'true');
 
         wrapper.append(renderStars(score, 10), number);
-
-        if (scoreLabel) {
-            wrapper.append(element('span', 'index-hover-preview__score-label', scoreLabel));
-        }
 
         return wrapper;
     };
@@ -241,7 +238,7 @@
         }
 
         if (Number.isFinite(data.score)) {
-            appendSection(details, label('labelScore'), renderScore(data.score, data.scoreLabel));
+            appendSection(details, label('labelScore'), renderScore(data.score));
         }
 
         // Only works with a saved DLsite average get this row.

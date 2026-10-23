@@ -929,5 +929,6 @@
     "DLsite rating": "DLsite 評價",
     "DLsite rating count": "DLsite 評價人數",
     "★:rating (:count rating)|★:rating (:count ratings)": "★:rating（:count 人）",
-    "(:count rating)|(:count ratings)": "（:count 人）"
+    "(:count rating)|(:count ratings)": "（:count 人）",
+    "My score": "個人分數"
 }

@@ -929,5 +929,6 @@
     "DLsite rating": "DLsite評価",
     "DLsite rating count": "DLsite評価数",
     "★:rating (:count rating)|★:rating (:count ratings)": "★:rating（:count件）|★:rating（:count件）",
-    "(:count rating)|(:count ratings)": "（:count件）|（:count件）"
+    "(:count rating)|(:count ratings)": "（:count件）|（:count件）",
+    "My score": "自分の評価"
 }

@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-* Added an optional Index Hover Preview that opens a large view of the saved cover, sample images, and work details (including the own score as stars) when resting on a cover; the mouse wheel changes images.
+* Added an optional Index Hover Preview that opens a large view of the saved cover, sample images, and work details (including your own score as stars and a number) when resting on a cover; the mouse wheel changes images.
 * Added the DLsite average rating and rating count. They are saved when a work is added, kept current by Refetch, included in Import / Export, and shown read-only on the Edit page.
 * Hover Preview also shows the saved DLsite average rating as stars with its rating count, next to the own score.
 

@@ -880,10 +880,6 @@ body.filter-modal-open {
     font-weight: bold;
 }
 
-.index-hover-preview__score-label {
-    opacity: .8;
-}
-
 .index-hover-preview__status {
     margin: 0;
     opacity: .8;
