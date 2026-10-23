@@ -258,6 +258,16 @@ Covers the Image Viewer option and Index viewer rendering/data:
 - safe full-image links
 - conditional script/dialog output
 
+#### `tests/Feature/IndexHoverPreviewTest.php`
+
+Covers the Hover Preview option and its per-work data:
+- default, save, reset, and independence from the Image Viewer option
+- conditional markup/script output, unchanged cover links, and coexistence with the Image Viewer
+- full details while Index fields are hidden, hidden-tag exclusion, sample-only images, description language preference and excerpt length
+- missing-data fallbacks
+- a constant query count regardless of library size
+- translated labels without translating work titles
+
 #### `tests/Feature/IndexPaginationSettingsTest.php`
 
 Covers fixed, custom, and unlimited Index pagination settings and reset/default behavior.
@@ -671,6 +681,18 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 - Open another work and confirm the viewer starts from that work's cover.
 - Confirm `View in full` opens the currently displayed image in a new tab.
 - Check behavior when one of the saved image paths is missing/unavailable and confirm the viewer remains usable.
+
+### Hover Preview
+
+- Enable Hover Preview, rest on an Index cover, and confirm the card shows only the saved details that exist.
+- Confirm the card opens below or above the hovered row and does not cover its title.
+- Confirm sample images cycle on the cover, stop when the pointer leaves, and the cover returns.
+- Save a missing sample path and confirm it is skipped, not counted, and requested only once.
+- Confirm clicking the cover still opens the Image Viewer or DLsite link and closes the card.
+- Confirm keyboard focus shows the card and `Escape` closes it.
+- On a touch device, confirm the info button opens and closes the card.
+- Search, sort, and change pages while a card is open and confirm no previous card or slideshow remains.
+- With "reduce motion" enabled, confirm the card appears without cycling images.
 
 ### Cover / Sample Image Editor
 

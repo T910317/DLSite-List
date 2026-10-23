@@ -554,6 +554,21 @@ When enabled:
 
 Hiding the Image field does not reset the saved Image Viewer option.
 
+#### Hover Preview
+
+Default: disabled.
+
+When enabled:
+- resting on an Index cover (or focusing it with the keyboard) for about 300 ms shows a card with the saved title, work code, Circle/Brand, Product Format, visible tags, and a short description excerpt
+- the cover cycles through saved sample images every 1.5 seconds and returns to the cover when the pointer leaves
+- sample images that fail to load are skipped and not counted
+- clicking the cover keeps its normal behavior (Image Viewer or DLsite link)
+- `Escape` closes the card; touch screens show an info button below the cover instead
+- with the system "reduce motion" preference, the card is shown without cycling images
+- the preview operates only while the Image Index field is visible
+
+Hover Preview uses saved data only and never contacts DLsite. It works independently of the Image Viewer option.
+
 #### Index Table Width
 
 Default: `default` choice
