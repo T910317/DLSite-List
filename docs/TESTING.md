@@ -281,7 +281,7 @@ Covers the Hover Preview option and its per-work data:
 - default, save, reset, and independence from the Image Viewer option
 - conditional markup/script output, unchanged cover links, and coexistence with the Image Viewer
 - full details while Index fields are hidden, hidden-tag exclusion, cover-first image pages, description language preference and excerpt length
-- the own score as a number with its content-focus score label, and missing-data fallbacks, including works without a score
+- the own score as a bare number without score wording, the "My score" row label, and missing-data fallbacks, including works without a score
 - the saved DLsite average rating, rating count, and translated count text, and no DLsite rating for works without one (or with an average but no count)
 - a constant query count regardless of library size
 - translated labels without translating work titles
@@ -714,7 +714,7 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 
 - Enable Hover Preview, rest on an Index cover, and confirm the large preview leaves a wide dimmed edge around it, shows the cover first and only the saved details that exist.
 - Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
-- Confirm a work scored 7 shows 3.5 lit stars with "7 / 10" and its score label, and an unscored work shows no Score row.
+- Confirm a work scored 9 shows a "My score" row with 4.5 lit stars followed by "9" (no "/ 10" or score wording), and an unscored work shows no My score row.
 - Confirm a work with a DLsite rating of 4.53 from 123 ratings shows a DLsite rating row with about 4.5 lit stars, "4.53", and "(123 ratings)", and a work without a DLsite rating shows no such row.
 - Confirm moving the pointer onto the dimmed edge closes the preview.
 - Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.

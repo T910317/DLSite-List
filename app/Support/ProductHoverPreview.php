@@ -32,7 +32,6 @@ final readonly class ProductHoverPreview
      *     tags: list<string>,
      *     description: ?string,
      *     score: ?int,
-     *     scoreLabel: ?string,
      *     dlsiteRating: ?float,
      *     dlsiteRatingCount: ?int,
      *     dlsiteRatingCountLabel: ?string,
@@ -73,9 +72,8 @@ final readonly class ProductHoverPreview
             'formats' => array_values(ProductFormat::labelsFor($product->product_format ?? [])),
             'tags' => $this->tags($id, $settings),
             'description' => $this->descriptionExcerpt($product),
-            // The user's own 1-10 score; its label follows the selected content focus.
+            // The user's own 1-10 score, shown as stars and the bare number (no score wording).
             'score' => $score !== null ? (int) $score->value : null,
-            'scoreLabel' => $score?->label(),
             // DLsite's 0-5 average and how many ratings it comes from; both null when DLsite has none saved.
             'dlsiteRating' => $dlsiteRating->average,
             'dlsiteRatingCount' => $dlsiteRating->count,
