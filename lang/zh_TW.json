@@ -935,5 +935,6 @@
     "Other version": "不同版本",
     "Translation": "翻譯版",
     "Other editions of this work are already in your library:": "收藏裡已有這部作品的其他版本：",
-    "Not in your library": "不在收藏裡"
+    "Not in your library": "不在收藏裡",
+    ":value out of :max": ":value / :max 分"
 }

@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\ProductContributorRole;
 use App\Enums\ProductField;
 use App\Enums\ProductFormat;
+use App\Enums\ProductScore;
 use App\Enums\UiLanguage;
 use App\Models\GenreGroup;
 use App\Models\Product;
@@ -29,6 +30,8 @@ final readonly class ProductHoverPreview
      *     formats: list<string>,
      *     tags: list<string>,
      *     description: ?string,
+     *     score: ?int,
+     *     scoreLabel: ?string,
      *     images: list<string>
      * }
      */
@@ -46,9 +49,11 @@ final readonly class ProductHoverPreview
             'description_english',
             'work_image',
             'sample_images',
+            'score',
         ]);
 
         $id = (string) $product->getKey();
+        $score = ProductScore::tryFrom((string) $product->score);
 
         return [
             'id' => $id,
@@ -60,6 +65,9 @@ final readonly class ProductHoverPreview
             'formats' => array_values(ProductFormat::labelsFor($product->product_format ?? [])),
             'tags' => $this->tags($id, $settings),
             'description' => $this->descriptionExcerpt($product),
+            // The user's own 1-10 score; its label follows the selected content focus.
+            'score' => $score !== null ? (int) $score->value : null,
+            'scoreLabel' => $score?->label(),
             // Preview pages: the saved cover first, then the saved sample images.
             'images' => array_values(array_map(
                 fn(string $path): string => asset(Product::versionedImagePath($path)),

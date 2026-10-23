@@ -14,7 +14,7 @@ It supports DLsite works with RJ, BJ, and VJ codes - Voice / ASMR, Games, Manga,
 - **Tag Library:** Add your own tags and organize them into groups. Add parent/child relationships, customize tag and group colors, control visibility, and change their order on the Index.
 - **Search and Filter:** Search, filter, and sort your library.
 - **Image Viewer:** View saved covers and sample images.
-- **Hover Preview:** Rest on a cover to open a large view of its saved cover, sample images, and work details, and use the mouse wheel to change images.
+- **Hover Preview:** Rest on a cover to open a large view of its saved cover, sample images, and work details (your own score shown as stars), and use the mouse wheel to change images.
 
 ### ⇄ Updates & Transfers
 

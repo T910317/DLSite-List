@@ -935,5 +935,6 @@
     "Other version": "別バージョン",
     "Translation": "翻訳版",
     "Other editions of this work are already in your library:": "ライブラリにはこの作品の別バージョンが既にあります:",
-    "Not in your library": "ライブラリにありません"
+    "Not in your library": "ライブラリにありません",
+    ":value out of :max": ":max 点中 :value 点"
 }

@@ -935,5 +935,6 @@
     "Other version": "Other version",
     "Translation": "Translation",
     "Other editions of this work are already in your library:": "Other editions of this work are already in your library:",
-    "Not in your library": "Not in your library"
+    "Not in your library": "Not in your library",
+    ":value out of :max": ":value out of :max"
 }

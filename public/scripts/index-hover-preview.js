@@ -149,7 +149,9 @@
         const section = element('div', 'index-hover-preview__section');
         const value = element('dd');
 
-        if (Array.isArray(content)) {
+        if (content instanceof Node) {
+            value.append(content);
+        } else if (Array.isArray(content)) {
             const list = element('ul', 'index-hover-preview__chips');
 
             content.forEach((item) => list.append(element('li', '', item)));
@@ -160,6 +162,43 @@
 
         section.append(element('dt', '', heading), value);
         parent.append(section);
+    };
+
+    const formatNumber = (number) => String(Math.round(number * 10) / 10);
+
+    // Reusable star meter: `value` on a 0..`max` scale drawn as `count` stars, partial stars included,
+    // e.g. an own score of 7 / 10 lights 3.5 stars and a DLsite average of 4.3 / 5 lights 4.3 stars.
+    const renderStars = (value, max, count = 5) => {
+        const ratio = max > 0 ? Math.min(Math.max(value / max, 0), 1) : 0;
+        const stars = '★'.repeat(count);
+        const meter = element('span', 'index-hover-preview__stars');
+        meter.setAttribute('role', 'img');
+        meter.setAttribute(
+            'aria-label',
+            label('labelRating').replace(':value', formatNumber(value)).replace(':max', formatNumber(max)),
+        );
+
+        const fill = element('span', 'index-hover-preview__stars-fill', stars);
+        fill.style.width = `${ratio * 100}%`;
+
+        meter.append(element('span', 'index-hover-preview__stars-track', stars), fill);
+
+        return meter;
+    };
+
+    const renderScore = (score, scoreLabel) => {
+        const wrapper = element('span', 'index-hover-preview__score');
+        // The stars already announce "7 out of 10"; the visible number is for sighted readers only.
+        const number = element('span', 'index-hover-preview__score-value', `${score} / 10`);
+        number.setAttribute('aria-hidden', 'true');
+
+        wrapper.append(renderStars(score, 10), number);
+
+        if (scoreLabel) {
+            wrapper.append(element('span', 'index-hover-preview__score-label', scoreLabel));
+        }
+
+        return wrapper;
     };
 
     const renderPreview = (data) => {
@@ -183,6 +222,10 @@
 
         if (data.formats?.length) {
             appendSection(details, label('labelFormats'), data.formats.join(', '));
+        }
+
+        if (Number.isFinite(data.score)) {
+            appendSection(details, label('labelScore'), renderScore(data.score, data.scoreLabel));
         }
 
         if (data.tags?.length) {
