@@ -93,9 +93,53 @@ def product_format_codes(work):
     return formats
 
 
+async def json_response(api, url, params):
+    async with api.get(url, params=params) as response:
+        response.raise_for_status()
+        return await response.json(content_type=None)
+
+
+async def edition_links(api, work):
+    """
+    Returns DLsite's raw edition links, or None when they could not be read.
+    dlsite-async drops these fields, so they are requested separately.
+    """
+    try:
+        info = await json_response(
+            api,
+            "https://www.dlsite.com/maniax/product/info/ajax",
+            {"product_id": work.product_id},
+        )
+        products = await json_response(
+            api,
+            f"https://www.dlsite.com/{work.site_id or 'maniax'}/api/=/product.json",
+            {"workno": work.product_id},
+        )
+    except Exception as error:
+        logging.warning(f"Edition lookup failed for {work.product_id}: {error}")
+        return None
+
+    info = info.get(work.product_id) if isinstance(info, dict) else None
+    product = next(
+        (
+            item
+            for item in (products if isinstance(products, list) else [])
+            if isinstance(item, dict) and item.get("workno") == work.product_id
+        ),
+        {},
+    )
+
+    return {
+        "translation_info": (info or {}).get("translation_info"),
+        "editions": product.get("editions") or [],
+        "language_editions": product.get("language_editions") or [],
+    }
+
+
 async def japanese_dlsite(work_id):
     async with DlsiteAPI() as api:
-        return await api.get_work(work_id)
+        work = await api.get_work(work_id)
+        return work, await edition_links(api, work)
 
 
 async def english_dlsite(work_id):
@@ -104,10 +148,10 @@ async def english_dlsite(work_id):
 
 
 async def fetch_work_data(work_id):
-    japanese = await japanese_dlsite(work_id)
+    japanese, editions = await japanese_dlsite(work_id)
     english = await english_dlsite(work_id)
 
-    return japanese, english
+    return japanese, english, editions
 
 
 def download_image(url, save_path):
@@ -200,11 +244,17 @@ def fetch_images(work, image_output):
 
 
 def run(arguments):
-    work_japanese, work_english = asyncio.run(fetch_work_data(arguments.work_id))
+    work_japanese, work_english, editions = asyncio.run(
+        fetch_work_data(arguments.work_id)
+    )
     japanese = to_serializable(work_japanese)
     english = to_serializable(work_english)
     japanese["product_format"] = product_format_codes(work_japanese)
     english["product_format"] = product_format_codes(work_english)
+
+    # Leaving the key out means "unknown", so Laravel keeps the stored links.
+    if editions is not None:
+        japanese["dlsite_editions"] = editions
     combined = {"japanese": japanese, "english": english}
     json_output = Path(arguments.json_output)
     json_output.parent.mkdir(parents=True, exist_ok=True)

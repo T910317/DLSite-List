@@ -19,10 +19,12 @@
         @if ($warning ?? null)
             <p class="work-form-completed-message" role="alert">{{ $warning }}</p>
         @endif
+        @include('components.related-editions-warning', ['works' => $relatedWorks ?? [], 'linkTarget' => '_blank'])
         <a class="work-form-completed-action" href="{{ $redirectUrl }}" target="_top">{{ __('Continue') }}</a>
     </main>
 
-    @if (!($warning ?? null))
+    {{-- Stay open while there is something to read. --}}
+    @if (!($warning ?? null) && empty($relatedWorks))
         <script>
             window.parent.postMessage({
                 type: 'work-form-completed',

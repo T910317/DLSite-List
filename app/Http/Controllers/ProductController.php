@@ -26,6 +26,7 @@ use App\Support\ProductContributorSync;
 use App\Support\ProductFieldLayout;
 use App\Support\ProductGenreSync;
 use App\Support\ProductImageSubmission;
+use App\Support\RelatedEditions;
 use App\Support\ReturnTarget;
 use App\Support\TagColor;
 use App\Support\TagInput;
@@ -125,6 +126,7 @@ class ProductController extends Controller
             $request,
             $returnTarget->toUrl(),
             DLSiteFetchResult::displayImageFailureMessage($result->warning),
+            relatedWorks: RelatedEditions::summaries($result->relatedWorks),
         );
     }
 
@@ -225,7 +227,29 @@ class ProductController extends Controller
         $returnTarget = ReturnTarget::fromRequest($request)
             ->forProduct($product);
 
-        return $this->productMutationResponse($request, $returnTarget->toUrl());
+        // Custom works have no DLsite edition list, so only works that list this code match.
+        return $this->productMutationResponse(
+            $request,
+            $returnTarget->toUrl(),
+            relatedWorks: RelatedEditions::summaries(RelatedEditions::inLibrary($product->getKey())),
+        );
+    }
+
+    /**
+     * Lists library works that are another edition of the code typed on the create form.
+     */
+    public function relatedEditions(Request $request): View
+    {
+        // The field also accepts a DLsite link, so read the first code in it.
+        $input = $request->query('id');
+        $code = is_string($input) && preg_match('/(?:RJ|BJ|VJ)\d+/i', $input, $match)
+            ? strtoupper($match[0])
+            : null;
+
+        return view('components.related-editions-warning', [
+            'works' => $code === null ? [] : RelatedEditions::summaries(RelatedEditions::inLibrary($code)),
+            'linkTarget' => '_blank',
+        ]);
     }
 
     /**
@@ -263,6 +287,7 @@ class ProductController extends Controller
             'editFields' => ProductFieldLayout::editFields(Option::editFieldLayout()),
             'contributorInputs' => $this->formatContributorInputs($product),
             'readonlyFieldValues' => $this->readonlyFieldValues($product),
+            'relatedEditionRows' => RelatedEditions::displayRows($product),
             'progressOptions' => ProductProgress::visibleOptions(
                 Option::optionalProductStatuses(),
                 $product->progress,
@@ -550,10 +575,12 @@ class ProductController extends Controller
         ?string $warning = null,
         ?string $completionStatus = null,
         ?string $completionDescription = null,
+        array $relatedWorks = [],
     ): RedirectResponse|View {
         if (! $request->boolean('modal')) {
             return redirect($redirectUrl)
-                ->with('dlsite_image_warning', $warning);
+                ->with('dlsite_image_warning', $warning)
+                ->with('related_editions_warning', $relatedWorks === [] ? null : $relatedWorks);
         }
 
         return view('WorkFormCompleted', [
@@ -561,6 +588,7 @@ class ProductController extends Controller
             'warning' => $warning,
             'completionStatus' => $completionStatus,
             'completionDescription' => $completionDescription,
+            'relatedWorks' => $relatedWorks,
         ]);
     }
 

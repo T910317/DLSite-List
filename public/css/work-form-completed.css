@@ -122,3 +122,29 @@ body.work-form-completed-page *::after {
         font-size: 20px;
     }
 }
+.work-form-completed-page .related-editions-warning {
+    background: #FEF3C7;
+    border: 1px solid #FCD34D;
+    border-radius: 8px;
+    color: #92400E;
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 0 auto 22px;
+    max-width: 340px;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.work-form-completed-page .related-editions-warning__list {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+
+.work-form-completed-page .related-editions-warning a {
+    color: inherit;
+    font-weight: bold;
+}
+
+.work-form-completed-page .related-editions-warning__work-title {
+    margin-left: 4px;
+}

@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import unittest
 from pathlib import Path
@@ -6,7 +7,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from dlsite_async.work import AgeCategory, BookType, WorkOption, WorkType
-from DLSiteScraper import product_format_codes, to_serializable
+from DLSiteScraper import edition_links, product_format_codes, to_serializable
 
 
 class DLSiteScraperProductFormatTest(unittest.TestCase):
@@ -103,6 +104,62 @@ class DLSiteScraperProductFormatTest(unittest.TestCase):
 
         self.assertNotIn("__objclass__", str(serialized))
         self.assertNotIn("_sort_order_", str(serialized))
+
+
+class FakeResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        return False
+
+    def raise_for_status(self):
+        if isinstance(self.payload, Exception):
+            raise self.payload
+
+    async def json(self, content_type=None):
+        return self.payload
+
+
+class FakeApi:
+    def __init__(self, payloads):
+        self.payloads = payloads
+
+    def get(self, url, params=None):
+        return FakeResponse(self.payloads[url.split("/")[-1]])
+
+
+class DLSiteScraperEditionLinksTest(unittest.TestCase):
+    work = SimpleNamespace(product_id="RJ01625050", site_id="home")
+
+    def test_edition_links_keep_the_raw_dlsite_fields(self):
+        translation = {"original_workno": "RJ01587488", "child_worknos": []}
+        editions = [{"workno": "RJ01587488", "edition_type": "language"}]
+        api = FakeApi(
+            {
+                "ajax": {"RJ01625050": {"translation_info": translation}},
+                "product.json": [
+                    {"workno": "RJ01625050", "language_editions": editions}
+                ],
+            }
+        )
+
+        self.assertEqual(
+            {
+                "translation_info": translation,
+                "editions": [],
+                "language_editions": editions,
+            },
+            asyncio.run(edition_links(api, self.work)),
+        )
+
+    def test_edition_links_are_unknown_when_a_request_fails(self):
+        api = FakeApi({"ajax": RuntimeError("offline"), "product.json": []})
+
+        self.assertIsNone(asyncio.run(edition_links(api, self.work)))
 
 
 if __name__ == "__main__":

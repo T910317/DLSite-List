@@ -9,6 +9,7 @@ use App\Models\Genre;
 use App\Models\Product;
 use App\Support\ProductContributorSync;
 use App\Support\ProductGenreSync;
+use App\Support\RelatedEditions;
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -72,7 +73,7 @@ final class DLSiteProductImporter
             ->values()
             ->all();
 
-        $product = DB::transaction(function () use (
+        [$product, $relatedWorks] = DB::transaction(function () use (
             $input,
             $workData,
             $productId,
@@ -91,7 +92,7 @@ final class DLSiteProductImporter
             $sampleImages,
             $onCreated,
             $fetchResult,
-        ): Product {
+        ): array {
             $product = Product::query()->createOrFirst(
                 ['id' => $productId],
                 [
@@ -100,6 +101,7 @@ final class DLSiteProductImporter
                     'work_name' => $workName,
                     'work_name_english' => $englishWorkName,
                     'product_format' => $productFormat === [] ? null : $productFormat,
+                    'related_editions' => $workData->relatedEditions,
                     'announce_date' => $workData->announceDate,
                     'age_category' => $this->textOverride(
                         $input,
@@ -153,15 +155,22 @@ final class DLSiteProductImporter
 
             $this->contributorSync->sync($product, $contributorsByRole, $makerId);
 
-            // Bulk Import records completion in the same transaction as product creation.
-            $onCreated?->__invoke($fetchResult->imageFailureMessage());
+            // Saving is never blocked; the caller warns about other editions already in the library.
+            $relatedWorks = RelatedEditions::inLibrary($productId, $workData->relatedEditions);
 
-            return $product;
+            // Bulk Import records completion in the same transaction as product creation.
+            $onCreated?->__invoke(implode("\n", array_filter([
+                $fetchResult->imageFailureMessage(),
+                RelatedEditions::warningMessage($relatedWorks),
+            ])) ?: null);
+
+            return [$product, $relatedWorks];
         });
 
         return new DLSiteProductImportResult(
             product: $product,
             warning: $fetchResult->imageFailureMessage(),
+            relatedWorks: $relatedWorks,
         );
     }
 

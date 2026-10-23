@@ -62,6 +62,9 @@
                                                 <tbody>
                                                     <x-fields.product-code-display :id="$product->id"
                                                         :work-name="$product->work_name" />
+                                                    @if ($relatedEditionRows !== [])
+                                                        <x-fields.related-editions :rows="$relatedEditionRows" />
+                                                    @endif
                                                     @foreach ($editFields as $field)
                                                         <x-fields.edit-configurable-row :field="$field"
                                                             :product="$product" :age-category-options="$ageCategoryOptions" :contributor-inputs="$contributorInputs"

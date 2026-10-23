@@ -29,6 +29,13 @@
                 <button type="button" class="image-warning-popup__close" aria-label="{{ __('Close') }}">&times;</button>
             </div>
         @endsession
+        @session('related_editions_warning')
+            <div class="related-editions-popup" role="alert">
+                @include('components.related-editions-warning', ['works' => $value])
+                <button type="button" class="image-warning-popup__close" aria-label="{{ __('Close') }}"
+                    onclick="this.parentElement.remove()">&times;</button>
+            </div>
+        @endsession
         <livewire:product-index />
     </main>
 

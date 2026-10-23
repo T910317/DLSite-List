@@ -909,5 +909,12 @@
     "Waiting for approval": "Waiting for approval",
     "Applying reviewed changes": "Applying reviewed changes",
     "Review results": "Review results",
-    "Group order and missing groups": "Group order and missing groups"
+    "Group order and missing groups": "Group order and missing groups",
+    "Other editions": "Other editions",
+    "Original": "Original",
+    "Language edition": "Language edition",
+    "Other version": "Other version",
+    "Translation": "Translation",
+    "Other editions of this work are already in your library:": "Other editions of this work are already in your library:",
+    "Not in your library": "Not in your library"
 }

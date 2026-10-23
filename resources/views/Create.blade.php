@@ -134,6 +134,11 @@
         src="{{ asset('scripts/index-image-viewer.js') }}?v={{ filemtime(public_path('scripts/index-image-viewer.js')) }}"
         defer></script>
 @endif
+@if (!$isBulkImport)
+    <script
+        src="{{ asset('scripts/related-editions-check.js') }}?v={{ filemtime(public_path('scripts/related-editions-check.js')) }}"
+        defer></script>
+@endif
 @if (!$isCustomCreate && !$isBulkImport)
     <script
         src="{{ asset('scripts/dlsite-create-status.js') }}?v={{ filemtime(public_path('scripts/dlsite-create-status.js')) }}">

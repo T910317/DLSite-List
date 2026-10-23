@@ -11,6 +11,7 @@ use App\Enums\ProductScore;
 use App\Models\LibraryImportItem;
 use App\Models\Product;
 use App\Support\ContentTerminology;
+use App\Support\RelatedEditions;
 use Illuminate\Support\Arr;
 
 /** Human-readable values for the shared Refetch presenter. */
@@ -28,6 +29,7 @@ final class ImportValue
             'brand' => __('Brand'),
             'age_category' => __('Age'),
             'product_format' => __('Product Format'),
+            'related_editions' => __('Other editions'),
             'announce_date' => __('Scheduled release date'),
             'product_code' => __('Product Code'),
             'site_id' => __('Site ID'),
@@ -160,6 +162,12 @@ final class ImportValue
         }
         if (! is_array($value)) {
             return $value;
+        }
+        if ($field === 'related_editions' && array_is_list($value)) {
+            return array_map(
+                fn(mixed $edition): array => ['value' => RelatedEditions::describe($edition)],
+                $value,
+            );
         }
         if ($field === 'product_format' && array_is_list($value)) {
             return array_map(

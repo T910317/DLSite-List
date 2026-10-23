@@ -776,6 +776,37 @@ class BulkImportTest extends TestCase
         $this->assertSame(["storage/Works/{$productCode}/sample_2.jpg"], $product->sample_images);
     }
 
+    public function test_other_editions_in_the_library_are_recorded_with_image_warnings_and_localized(): void
+    {
+        app()->setLocale('zh_TW');
+        Storage::fake('local');
+        Storage::fake('public');
+        Process::fake([
+            '*' => Process::result(output: '{"failed_images":["cover.jpg"]}'),
+        ])->preventStrayProcesses();
+        Product::factory()->create(['id' => 'RJ01587488']);
+        $productCode = 'RJ01625050';
+        $payload = $this->scrapedWorkPayload($productCode);
+        $payload['japanese']['work_image'] = 'cover-url';
+        $payload['japanese']['dlsite_editions'] = ['translation_info' => ['original_workno' => 'RJ01587488']];
+        Storage::disk('local')->put("Works/{$productCode}.json", json_encode($payload, JSON_THROW_ON_ERROR));
+        [, $item] = $this->createRunItem($productCode);
+
+        (new ImportBulkWorkJob($item->id))->handle(app(DLSiteProductImporter::class));
+
+        $item->refresh();
+        $this->assertSame(BulkImportItemStatus::Imported, $item->status);
+        $this->assertSame(
+            "DLsite data was fetched, but these images could not be downloaded: cover.jpg\n"
+            . 'Other editions of this work are already in your library: RJ01587488',
+            $item->warning,
+        );
+        $this->assertSame(
+            "已取得 DLsite 資料，但無法下載這些圖片：cover.jpg\n收藏裡已有這部作品的其他版本：RJ01587488",
+            $item->displayWarning(),
+        );
+    }
+
     /** @return array{0: BulkImportRun, 1: \App\Models\BulkImportItem} */
     private function createRunItem(
         string $productCode,

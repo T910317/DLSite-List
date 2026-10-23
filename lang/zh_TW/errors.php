@@ -159,6 +159,7 @@ return [
     'Cover image download failed after five attempts.' => '嘗試五次後封面圖片下載失敗。',
     'Sample image download failed after five attempts: :images' => '五次嘗試後預覽圖片下載失敗：:images',
     'DLsite data was fetched, but these images could not be downloaded: :images' => '已取得 DLsite 資料，但無法下載這些圖片：:images',
+    'Other editions of this work are already in your library: :works' => '收藏裡已有這部作品的其他版本：:works',
     'Archive images are incomplete. You can import only available images.' => '封存檔圖片不完整。您只能匯入可用的圖片。',
     'Use a positive CSS length with one of the supported units.' => '請輸入大於零的 CSS 長度，並使用支援的單位。',
     'Enter a tag title.' => '輸入標籤名稱。',

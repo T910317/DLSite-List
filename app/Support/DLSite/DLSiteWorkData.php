@@ -4,6 +4,7 @@ namespace App\Support\DLSite;
 
 use App\Enums\ProductContributorRole;
 use App\Enums\ProductFormat;
+use App\Support\RelatedEditions;
 
 final readonly class DLSiteWorkData
 {
@@ -27,6 +28,8 @@ final readonly class DLSiteWorkData
         public array $englishGenres,
         public array $sampleImages,
         public array $contributorsByRole,
+        /** @var list<array{code: string, type: string, label: ?string}>|null Null when editions are unknown. */
+        public ?array $relatedEditions = null,
     ) {}
 
     public static function fromArray(array $workData, ?string $fallbackProductId = null): self
@@ -64,6 +67,7 @@ final readonly class DLSiteWorkData
             englishGenres: self::list($english['genre'] ?? []),
             sampleImages: self::list($japanese['sample_images'] ?? []),
             contributorsByRole: self::contributorsByRole($japanese, $english),
+            relatedEditions: RelatedEditions::fromWorkData($japanese, $english, $productId),
         );
     }
 

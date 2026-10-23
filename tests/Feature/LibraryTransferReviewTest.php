@@ -412,6 +412,7 @@ class LibraryTransferReviewTest extends TestCase
             'age',
             'site_id',
             'product_format',
+            'related_editions',
             'announce_date',
             'circle',
             'publisher',

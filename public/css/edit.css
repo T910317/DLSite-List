@@ -646,6 +646,9 @@ body.product-form-page {
     --form-error-bg: #FEE2E2;
     --form-error-border: #FCA5A5;
     --form-fetch-status-text: #166534;
+    --form-notice-text: #92400E;
+    --form-notice-bg: #FEF3C7;
+    --form-notice-border: #FCD34D;
     --form-modal-backdrop: rgba(47, 26, 38, 0.34);
     --form-modal-bg: #FFF8FC;
     --form-shadow: 0 14px 30px rgba(125, 106, 106, 0.10), 0 2px 8px rgba(238, 152, 152, 0.16);
@@ -676,7 +679,46 @@ body.product-form-page {
     --form-error-bg: #2A1717;
     --form-error-border: #6E2B2B;
     --form-fetch-status-text: #86EFAC;
+    --form-notice-text: #FCD34D;
+    --form-notice-bg: #2B2410;
+    --form-notice-border: #6B5416;
     --form-modal-backdrop: rgba(0, 0, 0, 0.5);
     --form-modal-bg: #222222;
     --form-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+/* Other editions of a work: create-page notice and edit-page list. */
+.related-editions-warning {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--form-notice-border, #FCD34D);
+    border-radius: 6px;
+    background-color: var(--form-notice-bg, #FEF3C7);
+    color: var(--form-notice-text, #92400E);
+    line-height: 1.5;
+}
+
+.related-editions-warning__list,
+.related-editions-list {
+    margin: 4px 0 0;
+    padding-left: 18px;
+}
+
+.related-editions-list {
+    margin: 0;
+}
+
+.related-editions-warning a,
+.related-editions-list a {
+    font-weight: bold;
+}
+
+.related-editions-warning__work-title,
+.related-editions-list__title,
+.related-editions-list__type,
+.related-editions-list__missing {
+    margin-left: 4px;
+}
+
+.related-editions-list__missing {
+    opacity: 0.7;
 }
