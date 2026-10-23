@@ -19,6 +19,12 @@ All notable changes to this project are documented in this file.
 ### Changed
 
 * The Index `Score` column is now titled `Ratings` because it shows both ratings. It still sorts by your own score. On narrow screens, Ratings and Series each use a full row of the work card.
+* Wide, Full, and custom Index table widths now give the extra room to the Title and Tags columns instead of only Title. Short columns keep their widths, and the Default width is unchanged.
+
+### Fixed
+
+* Fixed the Index making the page scroll sideways on narrow windows and with the Full table width.
+* Fixed wide Index tables running under the floating side menu on large screens.
 
 ## 2.1.0 - 2026-10-22
 
