@@ -192,6 +192,7 @@
     "Added to the site Date": "登録日",
     "Updated Date": "更新日",
     "Notes are already shown inside Title; enable this for a separate column.": "メモはすでにタイトル内に表示されています。別の列にも表示する場合は有効にしてください。",
+    "Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.": "作品コードを独立した列に表示します。オンの間、タイトル列にはタイトルのみを表示し、見出しではタイトル順に並べ替えます。",
     "Notes below Title": "タイトルの下のメモ",
     "Shows each work's Notes beneath its title on the Index.": "一覧で各作品のタイトルの下にメモを表示します。",
     "Asc": "昇順",

@@ -4,6 +4,7 @@ namespace Tests\Unit\Support;
 
 use App\Enums\ContentFocus;
 use App\Enums\ProductField;
+use App\Enums\ProductIndexSortField;
 use App\Enums\UiLanguage;
 use App\Support\ContentTerminology;
 use App\Support\ProductFieldLayout;
@@ -37,6 +38,7 @@ class ProductFieldLayoutTest extends TestCase
         $expectedOrders = [
             ProductFieldLayout::SURFACE_INDEX => [
                 ProductField::Image,
+                ProductField::ProductCode,
                 ProductField::Title,
                 ProductField::Score,
                 ProductField::Series,
@@ -256,6 +258,7 @@ class ProductFieldLayoutTest extends TestCase
 
         $this->assertSame([
             ProductField::Image->value,
+            ProductField::ProductCode->value,
             ProductField::Title->value,
             ProductField::Score->value,
             ProductField::Series->value,
@@ -296,8 +299,11 @@ class ProductFieldLayoutTest extends TestCase
             ProductField::Tags->value,
         ], ProductFieldLayout::visibleFields($layout));
 
-        $this->assertTrue($layout[1]['visibility_locked']);
-        $this->assertTrue($layout[1]['notes_visible']);
+        $this->assertFalse($layout[1]['visible']);
+        $this->assertArrayNotHasKey('visibility_locked', $layout[1]);
+        $this->assertTrue(ProductFieldLayout::indexTitleShowsProductCode($layout));
+        $this->assertTrue($layout[2]['visibility_locked']);
+        $this->assertTrue($layout[2]['notes_visible']);
         $this->assertTrue(ProductFieldLayout::indexTitleNotesVisible($layout));
         $this->assertArrayNotHasKey('note', collect($layout)->firstWhere('field', ProductField::Notes->value));
         $this->assertArrayNotHasKey('note', collect($layout)->firstWhere('field', ProductField::MakerNames->value));
@@ -698,6 +704,75 @@ class ProductFieldLayoutTest extends TestCase
                 'contributor_role' => null,
             ],
         ], $columns);
+    }
+
+    public function test_index_product_code_column_is_optional_and_prefixed_for_saved_layouts(): void
+    {
+        $this->assertTrue(ProductField::ProductCode->isAvailableOn(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertTrue(ProductField::ProductCode->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertFalse(ProductField::ProductCode->isVisibilityLocked(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertFalse(ProductField::ProductCode->isAvailableOn(ProductFieldLayout::SURFACE_FILTER));
+        $this->assertFalse(ProductField::ProductCode->isAvailableOn(ProductFieldLayout::SURFACE_EDIT));
+        $this->assertSame(ProductIndexSortField::Code, ProductField::ProductCode->sortField());
+        $this->assertSame(ProductIndexSortField::Title, ProductField::Title->sortField());
+
+        // A layout saved before the column existed gets it ahead of Title, still hidden.
+        $savedLayout = ProductFieldLayout::normalize([
+            ['field' => ProductField::Score->value, 'visible' => true],
+            ['field' => ProductField::Title->value, 'visible' => true],
+            ['field' => ProductField::Image->value, 'visible' => true],
+        ], ProductFieldLayout::SURFACE_INDEX);
+
+        $this->assertSame([
+            ProductField::ProductCode->value,
+            ProductField::Score->value,
+            ProductField::Title->value,
+            ProductField::Image->value,
+        ], array_slice(array_column($savedLayout, 'field'), 0, 4));
+        $this->assertFalse($savedLayout[0]['visible']);
+        $this->assertTrue(ProductFieldLayout::indexTitleShowsProductCode($savedLayout));
+        $this->assertNotContains(ProductField::ProductCode->value, ProductFieldLayout::visibleFields($savedLayout));
+    }
+
+    public function test_index_title_sorts_by_code_until_the_product_code_column_is_shown(): void
+    {
+        $combinedLayout = ProductFieldLayout::normalize(null, ProductFieldLayout::SURFACE_INDEX);
+        $splitLayout = ProductFieldLayout::normalize(
+            collect($combinedLayout)
+                ->map(fn(array $row): array => $row['field'] === ProductField::ProductCode->value
+                    ? [...$row, 'visible' => true]
+                    : $row)
+                ->all(),
+            ProductFieldLayout::SURFACE_INDEX,
+        );
+
+        $combinedColumns = collect(ProductFieldLayout::indexColumns($combinedLayout))->keyBy('field');
+        $splitColumns = collect(ProductFieldLayout::indexColumns($splitLayout))->keyBy('field');
+
+        $this->assertFalse($combinedColumns->has(ProductField::ProductCode->value));
+        $this->assertSame(
+            ProductIndexSortField::Code->value,
+            $combinedColumns[ProductField::Title->value]['sort_field'],
+        );
+        $this->assertTrue(ProductFieldLayout::indexTitleShowsProductCode($combinedLayout));
+
+        $this->assertSame([
+            ProductField::Image->value,
+            ProductField::ProductCode->value,
+            ProductField::Title->value,
+        ], array_slice($splitColumns->keys()->all(), 0, 3));
+        $this->assertSame([
+            'field' => ProductField::ProductCode->value,
+            'label' => 'Product Code',
+            'class' => 'product-code',
+            'sort_field' => ProductIndexSortField::Code->value,
+            'contributor_role' => null,
+        ], $splitColumns[ProductField::ProductCode->value]);
+        $this->assertSame(
+            ProductIndexSortField::Title->value,
+            $splitColumns[ProductField::Title->value]['sort_field'],
+        );
+        $this->assertFalse(ProductFieldLayout::indexTitleShowsProductCode($splitLayout));
     }
 
     public function test_edit_fields_prepare_visible_rendering_metadata(): void

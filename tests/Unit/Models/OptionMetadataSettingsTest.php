@@ -310,16 +310,18 @@ class OptionMetadataSettingsTest extends TestCase
 
         $this->assertSame(ProductField::Image->value, $layout[0]['field']);
         $this->assertTrue($layout[0]['visible']);
-        $this->assertSame(ProductField::Title->value, $layout[1]['field']);
-        $this->assertTrue($layout[1]['visible']);
-        $this->assertTrue($layout[1]['visibility_locked']);
-        $this->assertTrue($layout[1]['notes_visible']);
-        $this->assertSame(ProductField::DescriptionJapanese->value, $layout[2]['field']);
+        $this->assertSame(ProductField::ProductCode->value, $layout[1]['field']);
+        $this->assertFalse($layout[1]['visible']);
+        $this->assertSame(ProductField::Title->value, $layout[2]['field']);
         $this->assertTrue($layout[2]['visible']);
-        $this->assertSame(ProductField::DescriptionEnglish->value, $layout[3]['field']);
-        $this->assertFalse($layout[3]['visible']);
-        $this->assertSame(ProductField::Score->value, $layout[4]['field']);
+        $this->assertTrue($layout[2]['visibility_locked']);
+        $this->assertTrue($layout[2]['notes_visible']);
+        $this->assertSame(ProductField::DescriptionJapanese->value, $layout[3]['field']);
+        $this->assertTrue($layout[3]['visible']);
+        $this->assertSame(ProductField::DescriptionEnglish->value, $layout[4]['field']);
         $this->assertFalse($layout[4]['visible']);
+        $this->assertSame(ProductField::Score->value, $layout[5]['field']);
+        $this->assertFalse($layout[5]['visible']);
         $this->assertNotContains('description', collect($layout)->pluck('field')->all());
         $this->assertContains(ProductField::Tags->value, collect($layout)->pluck('field')->all());
         $this->assertArrayNotHasKey('note', collect($layout)->firstWhere('field', ProductField::Notes->value));
@@ -505,6 +507,9 @@ class OptionMetadataSettingsTest extends TestCase
         $this->assertSame(ProductField::Image->value, $defaults->indexColumns[0]['field']);
         $this->assertContains(ProductField::Title->value, $defaults->visibleIndexFields);
         $this->assertTrue($defaults->titleNotesVisible);
+        $this->assertNotContains(ProductField::ProductCode->value, $defaults->visibleIndexFields);
+        $this->assertTrue($defaults->titleShowsProductCode);
+        $this->assertFalse(collect($defaults->indexSortFieldLayout)->firstWhere('field', ProductIndexSortField::Title->value)['visible']);
         $this->assertSame(ProductField::Title->value, $defaults->filterFields[0]['field']);
         $this->assertFalse($defaults->indexGroupOrderingEnabled);
         $this->assertFalse($defaults->searchHiddenDescriptionsEnabled);
@@ -810,6 +815,7 @@ class OptionMetadataSettingsTest extends TestCase
     private function visibleDefaultSortOptions(): array
     {
         return array_diff_key(ProductIndexSortField::options(), array_flip([
+            ProductIndexSortField::Title->value,
             ProductIndexSortField::UpdatedAt->value,
             ProductIndexSortField::SiteId->value,
             ProductIndexSortField::ProductFormat->value,

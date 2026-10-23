@@ -213,6 +213,7 @@ class ProductIndex extends Component
             'optionalProductStatuses' => $settings->optionalProductStatuses,
             'contentOverflow' => $settings->contentOverflow,
             'titleNotesVisible' => $settings->titleNotesVisible,
+            'titleShowsProductCode' => $settings->titleShowsProductCode,
             'indexColumns' => $settings->indexColumns,
             'filterFields' => $settings->filterFields,
             'filterActive' => $filterQuery !== [],

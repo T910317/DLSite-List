@@ -218,7 +218,7 @@ Regression coverage injects failures after successor-job insertion in every plan
 
 #### `tests/Feature/LibraryTransferImportTest.php`
 
-Covers multipart upload/validation, missing or replacement parts, archive/path/checksum safety, bounded analysis/checkpoint retries, image validation, existing/new work analysis, incomplete-image imports for existing and new works, and data-only continuation. Incomplete-image warnings remain canonical in staged metadata and are rendered from the operational error catalog in the current UI locale. Product Format coverage includes custom/empty values, invalid-value quarantine, locale fallback, and compatibility with archives created before the field existed. `announce_date` tests cover round trips, omitted fields, and invalid-date quarantine. Site ID tests cover round trips and locale metadata fallback when importing older archives without an explicit stored site. Traditional Chinese tag tests cover the optional `traditional_chinese` archive locale, round trips, and older archives without it keeping existing Traditional Chinese tags. Archive compatibility tests cover v2 output, released v1 manifests and legacy `rj_code`/Index sort Options layouts.
+Covers multipart upload/validation, missing or replacement parts, archive/path/checksum safety, bounded analysis/checkpoint retries, image validation, existing/new work analysis, incomplete-image imports for existing and new works, and data-only continuation. Incomplete-image warnings remain canonical in staged metadata and are rendered from the operational error catalog in the current UI locale. Product Format coverage includes custom/empty values, invalid-value quarantine, locale fallback, and compatibility with archives created before the field existed. `announce_date` tests cover round trips, omitted fields, and invalid-date quarantine. Site ID tests cover round trips and locale metadata fallback when importing older archives without an explicit stored site. Traditional Chinese tag tests cover the optional `traditional_chinese` archive locale, round trips, and older archives without it keeping existing Traditional Chinese tags. Archive compatibility tests cover v2 output, released v1 manifests and legacy `rj_code`/Index sort Options layouts. Index layout tests cover round trips of the optional Product Code column and Title sort, and older Options archives without a Product Code row keeping the column hidden.
 
 #### `tests/Feature/LibraryTransferReviewTest.php`
 
@@ -399,6 +399,7 @@ Covers the Livewire Index:
 - narrow hydration
 - batched settings
 - field visibility/order, optional-column sort mappings (including optional Site ID display, exact filtering, and sorting), and hydrated values independent of UI wording
+- the optional Product Code column: Title keeps the code and code sort while it is hidden; when shown, the code cell links to DLsite, Title shows only the title, and the two headers sort by code and by title
 - timestamps
 - DLsite links using Site ID with age-based fallback, including `announce/` selection independent of site
 - Image Viewer
@@ -419,7 +420,7 @@ Covers metadata-backfill behavior when canonical work JSON is missing or invalid
 #### `tests/Feature/ProductMetadataSettingsTest.php`
 
 Covers metadata-related UI settings:
-- field layouts, including collapsed section rendering and sortable-control interaction isolation
+- field layouts, including collapsed section rendering and sortable-control interaction isolation, and saving/resetting the Index Product Code column
 - Series Metadata
 - DLsite Links, including the age-based fallback, default-on announcement toggle, save/reset behavior, and tooltip
 - Form Page Theme
@@ -530,7 +531,7 @@ Covers server-rendered Add/Edit modal completion fallback output and conditional
 - Covers exact-code and partial-label search, editable-field round trips for every canonical Product Format in English, Japanese, and Traditional Chinese, ambiguous-label fallbacks, and replacing the main format without dropping manual additional/custom values.
 
 `tests/Unit/Enums/ProductIndexSortFieldTest.php`
-- Covers valid Index sort fields (including Publisher, Brand, and the virtual combined Maker sort), labels/backend metadata, and sort-dropdown behavior.
+- Covers valid Index sort fields (including Publisher, Brand, Title, and the virtual combined Maker sort), labels/backend metadata, and sort-dropdown behavior.
 
 `tests/Unit/Enums/FetchedTagLanguageTest.php`
 - Covers fetched tag language values, labels, and UI language mapping, plus the Traditional Chinese-only fallback order.
@@ -572,7 +573,7 @@ Covers server-rendered Add/Edit modal completion fallback output and conditional
 - Covers normalized contributor identity, maker id, role-specific sync, cross-role isolation, and Updated Date touching only on effective change.
 
 `tests/Unit/Support/ProductFieldLayoutTest.php`
-- Covers surface defaults/availability (including independent Publisher/Brand fields and the virtual Index-only combined field), localized fetched-tag labels, row normalization without stored help notes, required locks, editability, and prepared layout metadata (including the Index-only `Ratings` title for `score`).
+- Covers surface defaults/availability (including independent Publisher/Brand fields, the virtual Index-only combined field, and the hidden Index Product Code column prefixed into older layouts), localized fetched-tag labels, row normalization without stored help notes, required locks, editability, and prepared layout metadata (including the Index-only `Ratings` title for `score`, and the Title header switching from code to title sorting once Product Code is shown).
 
 `tests/Unit/Support/ProductGenreSyncTest.php`
 - Covers fetched language buckets, custom/fetched preservation/precedence, recursive ancestor expansion, and Updated Date touching only on effective change.

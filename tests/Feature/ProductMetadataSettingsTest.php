@@ -571,6 +571,7 @@ class ProductMetadataSettingsTest extends TestCase
         $help = [
             ['index', 'notes_below_title', "Shows each work's Notes beneath its title on the Index."],
             ['index', ProductField::Notes->value, 'Notes are already shown inside Title; enable this for a separate column.'],
+            ['index', ProductField::ProductCode->value, 'Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.'],
             ['index', ProductField::MakerNames->value, 'Combines the separate Circle, Publisher, and Brand fields into one Index column.'],
             ['filter', ProductField::MakerNames->value, 'Searches Circle, Publisher, and Brand together.'],
             ['sort', ProductField::MakerNames->value, 'Sorts by the first available name: Circle, then Publisher, then Brand.'],
@@ -585,6 +586,7 @@ class ProductMetadataSettingsTest extends TestCase
 
         $this->assertNull($component->fieldLayoutHelp('edit', ProductField::MakerNames->value));
         $this->assertNull($component->fieldLayoutHelp('filter', ProductField::Notes->value));
+        $this->assertNull($component->fieldLayoutHelp('quick_add', ProductField::ProductCode->value));
         $this->assertNull($component->fieldLayoutHelp('index', 'unknown'));
     }
 
@@ -886,6 +888,39 @@ class ProductMetadataSettingsTest extends TestCase
         $this->assertTrue($this->layoutRow(Option::indexFieldLayout(), ProductField::Tags)['fetched_visible']);
         $this->assertFalse($this->layoutRow(Option::editFieldLayout(), ProductField::FetchedTags)['editable']);
         $this->assertSame(ProductField::Image->value, Option::indexFieldLayout()[0]['field']);
+    }
+
+    public function test_field_layout_component_toggles_and_resets_the_index_product_code_column(): void
+    {
+        $this->assertTrue(Option::productIndexSettings()->titleShowsProductCode);
+
+        $component = Livewire::test(ProductFieldLayoutSettings::class)
+            ->assertSet('indexFields.product_code.visible', false)
+            ->assertSet('sortFields.title.visible', false)
+            ->assertSee(__('Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.'))
+            ->set('indexFields.product_code.visible', true)
+            ->call('saveLayout', 'index')
+            ->assertHasNoErrors()
+            ->assertSet('savedLayout', 'index');
+
+        $savedLayout = Option::indexFieldLayout();
+
+        $this->assertTrue($this->layoutRow($savedLayout, ProductField::ProductCode)['visible']);
+        $this->assertSame(
+            [ProductField::Image->value, ProductField::ProductCode->value, ProductField::Title->value],
+            array_slice(array_column($savedLayout, 'field'), 0, 3),
+        );
+        $this->assertFalse(Option::productIndexSettings()->titleShowsProductCode);
+        $this->assertContains(ProductField::ProductCode->value, Option::productIndexSettings()->visibleIndexFields);
+
+        $component
+            ->call('askResetToDefault')
+            ->call('resetToDefault')
+            ->assertHasNoErrors()
+            ->assertSet('indexFields.product_code.visible', false);
+
+        $this->assertFalse($this->layoutRow(Option::indexFieldLayout(), ProductField::ProductCode)['visible']);
+        $this->assertTrue(Option::productIndexSettings()->titleShowsProductCode);
     }
 
     public function test_field_layout_component_refreshes_after_global_defaults_reset(): void

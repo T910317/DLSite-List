@@ -1234,6 +1234,86 @@ class ProductIndexLivewireTest extends TestCase
             ->assertSee('REORDERED_IMAGE_TITLE');
     }
 
+    public function test_index_title_keeps_the_product_code_and_code_sort_while_the_code_column_is_hidden(): void
+    {
+        $product = $this->createProduct(1, [
+            'work_name' => 'COMBINED_TITLE',
+            'work_name_english' => 'COMBINED_ENGLISH',
+        ]);
+
+        $component = Livewire::test(ProductIndex::class)
+            ->assertViewHas('titleShowsProductCode', true)
+            ->assertDontSee('data-column="Product Code"', false)
+            ->assertSee("wire:click=\"sortByHeader('" . ProductIndexSortField::Code->value . "')\"", false)
+            ->assertDontSee("wire:click=\"sortByHeader('" . ProductIndexSortField::Title->value . "')\"", false);
+
+        $titleLinks = $this->productCellLinkTexts($component->html(), $product, 'title');
+
+        $this->assertCount(2, $titleLinks);
+        $this->assertMatchesRegularExpression('/^' . $product->id . '\s+-\s+COMBINED_TITLE$/', $titleLinks[0]);
+        $this->assertSame($product->id . ' - COMBINED_ENGLISH', $titleLinks[1]);
+        $this->assertSame([], $this->productCellLinkTexts($component->html(), $product, 'product-code'));
+    }
+
+    public function test_index_product_code_column_splits_the_code_from_the_title_and_links_to_dlsite(): void
+    {
+        Option::setIndexFieldLayout([
+            ['field' => ProductField::Image->value, 'visible' => true],
+            ['field' => ProductField::ProductCode->value, 'visible' => true],
+            ['field' => ProductField::Title->value, 'visible' => true],
+        ]);
+        $product = $this->createProduct(1, [
+            'work_name' => 'SPLIT_TITLE',
+            'work_name_english' => 'SPLIT_ENGLISH',
+        ]);
+
+        $component = Livewire::test(ProductIndex::class)
+            ->assertViewHas('titleShowsProductCode', false)
+            ->assertSeeInOrder(['data-column="Image"', 'data-column="Product Code"', 'data-column="Title"'], false)
+            ->assertSee("wire:click=\"sortByHeader('" . ProductIndexSortField::Code->value . "')\"", false)
+            ->assertSee("wire:click=\"sortByHeader('" . ProductIndexSortField::Title->value . "')\"", false);
+        $html = $component->html();
+
+        $this->assertSame([$product->id], $this->productCellLinkTexts($html, $product, 'product-code'));
+        $this->assertSame(['SPLIT_TITLE', 'SPLIT_ENGLISH'], $this->productCellLinkTexts($html, $product, 'title'));
+        $this->assertProductLinksUseUrl(
+            $html,
+            $product,
+            "https://www.dlsite.com/maniax/work/=/product_id/{$product->id}.html",
+        );
+    }
+
+    public function test_index_headers_sort_by_code_and_by_title_once_the_code_column_is_shown(): void
+    {
+        Option::setIndexPerPage(Option::INDEX_PER_PAGE_UNLIMITED);
+        Option::setIndexFieldLayout([
+            ['field' => ProductField::ProductCode->value, 'visible' => true],
+            ['field' => ProductField::Title->value, 'visible' => true],
+        ]);
+
+        $charlie = $this->createProduct(1, ['work_name' => 'TITLE_SORT_CHARLIE']);
+        $alpha = $this->createProduct(2, ['work_name' => 'TITLE_SORT_ALPHA']);
+        $bravo = $this->createProduct(3, ['work_name' => 'TITLE_SORT_BRAVO']);
+
+        Livewire::test(ProductIndex::class)
+            ->assertViewHas('products', fn($products): bool => $products->modelKeys() === [$bravo->id, $alpha->id, $charlie->id])
+            ->call('sortByHeader', ProductIndexSortField::Title->value)
+            ->assertSet('sort_first_field', ProductIndexSortField::Title->value)
+            ->assertSet('sort_first_direction', 'desc')
+            ->assertViewHas('products', fn($products): bool => $products->modelKeys() === [$charlie->id, $bravo->id, $alpha->id])
+            ->call('sortByHeader', ProductIndexSortField::Title->value)
+            ->assertSet('sort_first_direction', 'asc')
+            ->assertViewHas('products', fn($products): bool => $products->modelKeys() === [$alpha->id, $bravo->id, $charlie->id])
+            ->assertSeeInOrder(['TITLE_SORT_ALPHA', 'TITLE_SORT_BRAVO', 'TITLE_SORT_CHARLIE'])
+            ->call('sortByHeader', ProductIndexSortField::Code->value)
+            ->assertSet('sort_first_field', ProductIndexSortField::Code->value)
+            ->assertSet('sort_first_direction', 'desc')
+            ->assertViewHas('products', fn($products): bool => $products->modelKeys() === [$bravo->id, $alpha->id, $charlie->id])
+            ->call('sortByHeader', ProductIndexSortField::Code->value)
+            ->assertSet('sort_first_direction', 'asc')
+            ->assertViewHas('products', fn($products): bool => $products->modelKeys() === [$charlie->id, $alpha->id, $bravo->id]);
+    }
+
     public function test_optional_index_columns_render_and_sort_from_visible_headers(): void
     {
         Option::setIndexPerPage(Option::INDEX_PER_PAGE_UNLIMITED);
@@ -2713,6 +2793,24 @@ class ProductIndexLivewireTest extends TestCase
             $this->assertInstanceOf(DOMElement::class, $link);
             $this->assertSame($expectedUrl, $link->getAttribute('href'));
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function productCellLinkTexts(string $html, Product $product, string $cellClass): array
+    {
+        $document = new DOMDocument;
+        @$document->loadHTML($html);
+        $links = (new DOMXPath($document))->query(
+            '//tr[@id="' . $product->id . '"]/td[contains(concat(" ", normalize-space(@class), " "), " ' . $cellClass . ' ")]'
+            . '//a[contains(concat(" ", normalize-space(@class), " "), " product-link ")]',
+        );
+
+        return array_map(
+            fn(DOMElement $link): string => trim($link->textContent),
+            iterator_to_array($links),
+        );
     }
 
     private function createProduct(int $number, array $attributes = []): Product

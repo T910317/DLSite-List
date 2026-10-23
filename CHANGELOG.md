@@ -12,6 +12,8 @@ All notable changes to this project are documented in this file.
 * Added the DLsite average rating and rating count. They are saved when a work is added, kept current by Refetch, included in Import / Export, and shown read-only on the Edit page.
 * Hover Preview also shows the saved DLsite average rating in a DLsite rating row below My score, in the same style: stars and the average (for example `4.96`, without `/ 5`), followed by the rating count.
 * The Index shows the DLsite rating and your own score as two rows of stars with their numbers, for example `DLsite ★★★★★ 4.96` and `Mine ★★★★½ 9`. A row is shown only when there is a value.
+* Added an optional Product Code column to the Index. When enabled in `Options -> Field Layouts -> Index Table Columns`, the code gets its own column linking to DLsite, Title shows only the title, and the Title header sorts by title. It is hidden by default, so the Index looks and sorts as before.
+* Added Title to the Index sort options. It is hidden from the sort menu by default.
 
 ### Changed
 

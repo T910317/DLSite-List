@@ -425,6 +425,11 @@ a {
     font-weight: bold
 }
 
+.list-table .list-table-data .data.product-code {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
 .user-note-text {
     white-space: pre-line;
 }
@@ -1600,6 +1605,7 @@ body.filter-modal-open {
      */
     .list-table .list-table-data .data.score,
     .list-table .list-table-data .data.series,
+    .list-table .list-table-data .data.product-code,
     .list-table .list-table-data .data.description,
     .list-table .list-table-data .data.notes,
     .list-table .list-table-data .data.start-date,

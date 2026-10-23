@@ -20,6 +20,7 @@ class ProductIndexSortFieldTest extends TestCase
     {
         $expectedColumns = [
             ProductIndexSortField::Code->value => 'code_number',
+            ProductIndexSortField::Title->value => 'work_name',
             ProductIndexSortField::Score->value => 'score',
             ProductIndexSortField::Series->value => 'series',
             ProductIndexSortField::AgeCategory->value => 'age_category',
@@ -53,6 +54,7 @@ class ProductIndexSortFieldTest extends TestCase
     {
         $this->assertSame([
             ProductIndexSortField::Code->value,
+            ProductIndexSortField::Title->value,
             ProductIndexSortField::Score->value,
             ProductIndexSortField::Series->value,
             ProductIndexSortField::AgeCategory->value,
@@ -81,6 +83,7 @@ class ProductIndexSortFieldTest extends TestCase
 
         $this->assertArrayHasKey(ProductIndexSortField::AddedToTheSiteDate->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::UpdatedAt->value, $visibleOptions);
+        $this->assertArrayNotHasKey(ProductIndexSortField::Title->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::ProductFormat->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::SiteId->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::AnnouncementDate->value, $visibleOptions);
@@ -101,6 +104,7 @@ class ProductIndexSortFieldTest extends TestCase
             ProductIndexSortField::Series->value,
             ProductIndexSortField::Score->value,
             ProductIndexSortField::Code->value,
+            ProductIndexSortField::Title->value,
             ProductIndexSortField::AgeCategory->value,
             ProductIndexSortField::SiteId->value,
             ProductIndexSortField::ProductFormat->value,
@@ -142,6 +146,7 @@ class ProductIndexSortFieldTest extends TestCase
             ['field' => ProductIndexSortField::Series->value, 'visible' => true],
             ['field' => ProductIndexSortField::Score->value, 'visible' => false],
             ['field' => ProductIndexSortField::Code->value, 'visible' => true],
+            ['field' => ProductIndexSortField::Title->value, 'visible' => false],
             ['field' => ProductIndexSortField::AgeCategory->value, 'visible' => true],
             ['field' => ProductIndexSortField::SiteId->value, 'visible' => false],
             ['field' => ProductIndexSortField::ProductFormat->value, 'visible' => false],

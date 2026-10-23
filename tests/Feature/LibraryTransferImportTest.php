@@ -432,6 +432,69 @@ class LibraryTransferImportTest extends TestCase
         $this->assertSame('storage/Works/RJ123456/cover.png', $product->fresh()->work_image);
     }
 
+    public function test_options_archive_round_trips_the_index_product_code_column_and_title_sort(): void
+    {
+        Option::setIndexFieldLayout([
+            ['field' => 'image', 'visible' => true],
+            ['field' => 'product_code', 'visible' => true],
+            ['field' => 'title', 'visible' => true],
+        ]);
+        Option::setIndexSortFieldLayout([
+            ['field' => 'title', 'visible' => true],
+            ['field' => 'product_code', 'visible' => true],
+        ]);
+        $export = $this->exported(['options']);
+
+        Option::resetFieldLayoutsToDefault();
+        Option::resetIndexSortFieldLayoutToDefault();
+        $this->assertTrue(Option::productIndexSettings()->titleShowsProductCode);
+
+        $run = $this->imported($export);
+        $indexLayout = $run->items()->where('section', 'options')->where('entity_key', Option::INDEX_FIELD_LAYOUT)->firstOrFail()->incoming;
+        $this->assertSame(['image', 'product_code', 'title'], array_slice(array_column($indexLayout, 'field'), 0, 3));
+        $this->assertTrue(collect($indexLayout)->firstWhere('field', 'product_code')['visible']);
+
+        $this->apply($run);
+
+        $settings = Option::productIndexSettings();
+        $this->assertFalse($settings->titleShowsProductCode);
+        $this->assertSame(['image', 'product_code', 'title'], array_slice($settings->visibleIndexFields, 0, 3));
+        $this->assertSame('title', $settings->indexSortFieldLayout[0]['field']);
+        $this->assertArrayHasKey('title', $settings->indexSortFieldOptions);
+    }
+
+    public function test_options_archive_without_the_index_product_code_row_keeps_the_column_hidden(): void
+    {
+        Option::setIndexFieldLayout([
+            ['field' => 'title', 'visible' => true],
+            ['field' => 'score', 'visible' => false],
+        ]);
+        $export = $this->exported(['options']);
+        // Archives made before the column existed have no product_code row in the Index layout.
+        $this->rewriteData($export->parts()->firstOrFail(), fn(array $records): array => array_map(
+            fn(array $record): array => $record['key'] === Option::INDEX_FIELD_LAYOUT
+                ? [...$record, 'value' => array_values(array_filter(
+                    $record['value'],
+                    fn(array $row): bool => $row['field'] !== 'product_code',
+                ))]
+                : $record,
+            $records,
+        ));
+
+        Option::resetFieldLayoutsToDefault();
+        $run = $this->imported($export);
+        $this->assertNotContains(
+            'product_code',
+            array_column($run->items()->where('section', 'options')->where('entity_key', Option::INDEX_FIELD_LAYOUT)->firstOrFail()->incoming, 'field'),
+        );
+        $this->apply($run);
+
+        $layout = Option::indexFieldLayout();
+        $this->assertFalse(collect($layout)->firstWhere('field', 'product_code')['visible']);
+        $this->assertFalse(collect($layout)->firstWhere('field', 'score')['visible']);
+        $this->assertTrue(Option::productIndexSettings()->titleShowsProductCode);
+    }
+
     public function test_schema_v1_rejects_a_v2_work_identifier(): void
     {
         Product::factory()->create(['id' => 'RJ123456']);

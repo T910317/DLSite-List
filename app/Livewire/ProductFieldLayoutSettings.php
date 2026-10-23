@@ -153,6 +153,7 @@ class ProductFieldLayoutSettings extends Component
         return match ([$layout, $field]) {
             ['index', 'notes_below_title'] => __('Shows each work\'s Notes beneath its title on the Index.'),
             ['index', ProductField::Notes->value] => __('Notes are already shown inside Title; enable this for a separate column.'),
+            ['index', ProductField::ProductCode->value] => __('Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.'),
             ['index', ProductField::MakerNames->value] => __('Combines the separate Circle, Publisher, and Brand fields into one Index column.'),
             ['filter', ProductField::MakerNames->value] => __('Searches Circle, Publisher, and Brand together.'),
             ['sort', ProductIndexSortField::MakerNames->value] => __('Sorts by the first available name: Circle, then Publisher, then Brand.'),

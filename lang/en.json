@@ -193,6 +193,7 @@
     "Added to the site Date": "Added to the site Date",
     "Updated Date": "Updated Date",
     "Notes are already shown inside Title; enable this for a separate column.": "Notes are already shown inside Title; enable this for a separate column.",
+    "Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.": "Shows the product code in its own column. While it is on, Title shows only the title and its header sorts by title.",
     "Notes below Title": "Notes below Title",
     "Shows each work's Notes beneath its title on the Index.": "Shows each work's Notes beneath its title on the Index.",
     "Asc": "Asc",

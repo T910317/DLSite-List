@@ -10,6 +10,7 @@ enum ProductIndexSortField: string
     use ProvidesOptions;
 
     case Code = 'product_code';
+    case Title = 'title';
     case Score = 'score';
     case Series = 'series';
     case AgeCategory = 'age_category';
@@ -37,6 +38,7 @@ enum ProductIndexSortField: string
     {
         return match ($this) {
             self::Code => __('Product Code'),
+            self::Title => __('Title'),
             self::Score => __('Score'),
             self::Series => __('Series'),
             self::AgeCategory => __('Age'),
@@ -66,6 +68,7 @@ enum ProductIndexSortField: string
     {
         return match ($this) {
             self::Code => 'code_number',
+            self::Title => 'work_name',
             self::StartDate => 'start_date_sort',
             self::FinishDate => 'end_date_sort',
             self::ProductFormat => 'product_format->[0]',
@@ -76,6 +79,7 @@ enum ProductIndexSortField: string
     public function isHiddenByDefault(): bool
     {
         return in_array($this, [
+            self::Title,
             self::UpdatedAt,
             self::SiteId,
             self::ProductFormat,
