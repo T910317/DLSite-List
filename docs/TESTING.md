@@ -686,7 +686,7 @@ These checks remain manual because they depend on browser behavior, JavaScript e
 
 ### Hover Preview
 
-- Enable Hover Preview, rest on an Index cover, and confirm the near full-page preview shows the cover first and only the saved details that exist.
+- Enable Hover Preview, rest on an Index cover, and confirm the large preview leaves a wide dimmed edge around it, shows the cover first and only the saved details that exist.
 - Confirm images do not change on their own, one mouse-wheel notch moves one image (up and down), and the Index does not scroll underneath.
 - Confirm moving the pointer onto the dimmed edge closes the preview.
 - Save a missing sample path and confirm it is skipped, not counted as a page, and requested only once.
