@@ -303,7 +303,7 @@ class IndexEditionGroupingTest extends TestCase
         $html = Livewire::test(ProductIndex::class)->html();
 
         $this->assertSame('多語言', $this->badge($html, self::ORIGINAL));
-        $this->assertSame(['日文', '繁中'], array_column($this->editions($html, self::ORIGINAL), 'label'));
+        $this->assertSame(['日文', '繁體中文'], array_column($this->editions($html, self::ORIGINAL), 'label'));
     }
 
     private function createLanguagePair(): void
