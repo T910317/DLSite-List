@@ -7,6 +7,21 @@
     <div class="progress-track">
         <div class="progress-fill" style="width: {{ $progressPercent }}%"></div>
     </div>
+    @if ($fetchingResults->isNotEmpty())
+        <div class="refetch-current-works">
+            <span class="refetch-current-works__label">{{ __('Now fetching:') }}</span>
+            <ul>
+                @foreach ($fetchingResults as $fetchingResult)
+                    <li wire:key="refetch-current-work-{{ $fetchingResult->getKey() }}">
+                        <strong>{{ $fetchingResult->product_id }}</strong>
+                        @if (filled($fetchingResult->product?->work_name))
+                            <span>{{ $fetchingResult->product->work_name }}</span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div class="summary-grid">
         <div>{{ __('Fetched') }} <strong>{{ $run->fetched_count }}</strong></div>
         <div>{{ __('Failed') }} <strong>{{ $run->failed_count }}</strong></div>

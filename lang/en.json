@@ -509,6 +509,7 @@
     ":processed / :total work processed|:processed / :total works processed": ":processed / :total work processed|:processed / :total works processed",
     "Total": "Total",
     "Cancel Refetch": "Cancel Refetch",
+    "Now fetching:": "Now fetching:",
     "Tag changes": "Tag changes",
     "New JP tags": "New JP tags",
     "New EN tags": "New EN tags",

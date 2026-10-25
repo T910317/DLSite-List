@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\RefetchRun;
+use App\Support\Refetch\RefetchService;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -24,13 +25,14 @@ class OptionsRefetchProgress extends Component
         }
     }
 
-    public function render(): View
+    public function render(RefetchService $service): View
     {
         $run = $this->run();
 
         return view('livewire.options-refetch-progress', [
             'run' => $run,
             'progressPercent' => $this->progressPercent($run),
+            'fetchingResults' => $service->fetchingResults($run),
         ]);
     }
 

@@ -143,6 +143,8 @@ final class RefetchService
             ? $stagedWorkPath
             : null;
 
+        $this->markFetchStarted($result);
+
         try {
             $fetch = $this->fetcher->fetch(
                 $result->product_id,
@@ -246,6 +248,40 @@ final class RefetchService
 
         $result->refresh();
         $this->refreshRunProgress($result->run()->firstOrFail());
+    }
+
+    /**
+     * Records when the DLsite fetch for this work began, so the progress page can
+     * show which works are being fetched right now.
+     */
+    private function markFetchStarted(RefetchWorkResult $result): void
+    {
+        RefetchWorkResult::query()
+            ->whereKey($result->getKey())
+            ->where('status', RefetchWorkResult::STATUS_PENDING)
+            ->update(['fetch_started_at' => now()]);
+    }
+
+    /**
+     * Works whose DLsite fetch has started and not finished yet. Only a running
+     * refetch has them; a fetch that started longer ago than the job timeout
+     * belongs to a stopped worker and is not shown.
+     *
+     * @return EloquentCollection<int, RefetchWorkResult>
+     */
+    public function fetchingResults(RefetchRun $run): EloquentCollection
+    {
+        if (! $run->isRunning()) {
+            return new EloquentCollection;
+        }
+
+        return $run->results()
+            ->with('product:id,work_name')
+            ->where('status', RefetchWorkResult::STATUS_PENDING)
+            ->where('fetch_started_at', '>=', now()->subSeconds(FetchProductWorkJob::TIMEOUT_SECONDS))
+            ->orderBy('fetch_started_at')
+            ->orderBy('id')
+            ->get();
     }
 
     public function refreshRunProgress(RefetchRun $run): void

@@ -184,9 +184,9 @@ Refetch updates scraped DLsite-owned data without immediately overwriting the ex
 1. The user starts Refetch All Works or Refetch Selected Works from Options.
 2. `RefetchService::startRun()` creates a `refetch_runs` row and one `refetch_work_results` row per selected work.
 3. Laravel creates a batch containing one `FetchProductWorkJob` per work. Run creation and queue dispatch are committed atomically under the library mutation lock.
-4. Each job fetches staged metadata and, when image checking is enabled, staged cover/sample images into the Refetch storage roots.
+4. Each job records `fetch_started_at` on its result row, then fetches staged metadata and, when image checking is enabled, staged cover/sample images into the Refetch storage roots.
 5. `RefetchDiffBuilder` compares staged data with the canonical product data and records changes by `RefetchCategory`.
-6. `OptionsRefetchProgress` shows running/cancelling progress.
+6. `OptionsRefetchProgress` shows running/cancelling progress and, while the run is running, the works whose fetch has started but not finished.
 7. `OptionsRefetchReview` lets the user choose whether to overwrite each changed category.
 8. Applying changes promotes only accepted data and images.
 9. Canonical JSON is promoted only when the accepted changes actually change the work.

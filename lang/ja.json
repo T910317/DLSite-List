@@ -508,6 +508,7 @@
     ":processed / :total work processed|:processed / :total works processed": ":total件中:processed件を処理",
     "Total": "合計",
     "Cancel Refetch": "再取得をキャンセル",
+    "Now fetching:": "取得中：",
     "Tag changes": "タグの変更点",
     "New JP tags": "新規JPタグ",
     "New EN tags": "新規ENタグ",

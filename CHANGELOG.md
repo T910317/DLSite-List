@@ -16,6 +16,7 @@ All notable changes to this project are documented in this file.
 * Added Title to the Index sort options. It is hidden from the sort menu by default.
 * Added an optional Edition Grouping setting that shows other editions of a work in your library as one Index row, with a "Multiple languages" (or "Multiple versions") badge that links to each edition. Search and filters still check every edition. It is disabled by default.
 * Added an `Adaptive column widths` switch to Index Table Width, off by default. When it is on, Wide, Full, and custom table widths give the extra room to the Title and Tags columns instead of only Title, the Index no longer makes the page scroll sideways, and wide tables stay clear of the floating side menu on large screens. With the switch off, the Index looks the same as before.
+* The Refetch progress page now shows the works being fetched right now (product code and title), one line per work when several are fetched at once. The line is hidden once the Refetch finishes or is cancelled. This adds a nullable `fetch_started_at` column to `refetch_work_results`, applied by `php artisan migrate`.
 
 ### Changed
 
