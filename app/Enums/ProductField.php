@@ -38,6 +38,7 @@ enum ProductField: string
     case TotalTimesReListened = 'num_re_listen_times';
     case ReListenValue = 're_listen_value';
     case Priority = 'priority';
+    case WorkDate = 'work_date';
     case CreatedAt = 'created_at';
     case UpdatedAt = 'updated_at';
 
@@ -73,6 +74,7 @@ enum ProductField: string
             self::TotalTimesReListened => app(ContentTerminology::class)->repeatCount(),
             self::ReListenValue => app(ContentTerminology::class)->repeatValue(),
             self::Priority => __('Priority'),
+            self::WorkDate => __('Work release date'),
             self::CreatedAt => __('Added to the site Date'),
             self::UpdatedAt => __('Updated Date'),
         };
@@ -107,6 +109,7 @@ enum ProductField: string
             self::ReListenValue => ProductIndexSortField::ReListenValue,
             self::StartDate => ProductIndexSortField::StartDate,
             self::FinishDate => ProductIndexSortField::FinishDate,
+            self::WorkDate => ProductIndexSortField::WorkDate,
             self::CreatedAt => ProductIndexSortField::AddedToTheSiteDate,
             self::UpdatedAt => ProductIndexSortField::UpdatedAt,
             self::Circle => ProductIndexSortField::Circle,
@@ -368,6 +371,7 @@ enum ProductField: string
                     self::TotalTimesReListened,
                     self::ReListenValue,
                     self::Priority,
+                    self::WorkDate,
                     self::CreatedAt,
                     self::UpdatedAt,
                 ],
@@ -384,7 +388,6 @@ enum ProductField: string
                     self::TotalTimesReListened,
                     self::ReListenValue,
                     self::Priority,
-                    self::CreatedAt,
                     self::UpdatedAt,
                 ],
                 'editable_by_default' => [],

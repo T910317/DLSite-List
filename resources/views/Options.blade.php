@@ -153,6 +153,16 @@
                     <livewire:index-table-width-settings />
 
                     <h2>
+                        <i class="fa-solid fa-calendar-days fa-fw options-section-icon" aria-hidden="true"></i>
+                        {{ __('Work release date') }}
+                    </h2>
+                    <p class="option-description">
+                        {{ __('Choose which DLsite date the Work release date column shows and sorts by: the release date or the update date.') }}
+                    </p>
+
+                    <livewire:index-work-date-settings />
+
+                    <h2>
                         <i class="fa-solid fa-up-right-and-down-left-from-center fa-fw options-section-icon"
                             aria-hidden="true"></i>
                         {{ __('Overflow') }}

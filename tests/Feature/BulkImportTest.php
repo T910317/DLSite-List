@@ -655,6 +655,30 @@ class BulkImportTest extends TestCase
         $this->assertSame('Bulk Brand', Product::query()->findOrFail($productCode)->brand);
     }
 
+    public function test_bulk_import_job_persists_fetched_work_release_and_update_dates(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        Process::fake([
+            '*' => Process::result(output: '{"failed_images":[]}'),
+        ])->preventStrayProcesses();
+
+        $productCode = 'RJ000000407';
+        $payload = $this->scrapedWorkPayload($productCode);
+        $payload['japanese']['regist_date'] = '2026-03-01 09:00:00';
+        $payload['japanese']['modified_date'] = '2026-04-02 10:30:00';
+        Storage::disk('local')->put("Works/{$productCode}.json", json_encode($payload, JSON_THROW_ON_ERROR));
+        [$run, $item] = $this->createRunItem($productCode);
+
+        (new ImportBulkWorkJob($item->id))->handle(app(DLSiteProductImporter::class));
+        (new FinishBulkImportRunJob($run->id))->handle();
+
+        $product = Product::query()->findOrFail($productCode);
+        $this->assertSame(BulkImportItemStatus::Imported, $item->fresh()->status);
+        $this->assertSame('2026-03-01 09:00:00', $product->dlsite_release_date?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-04-02 10:30:00', $product->dlsite_updated_date?->format('Y-m-d H:i:s'));
+    }
+
     public function test_bulk_import_job_stores_traditional_chinese_fetched_tags(): void
     {
         Storage::fake('local');

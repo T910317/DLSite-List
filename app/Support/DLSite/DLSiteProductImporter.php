@@ -103,6 +103,8 @@ final class DLSiteProductImporter
                     'product_format' => $productFormat === [] ? null : $productFormat,
                     'related_editions' => $workData->relatedEditions,
                     'announce_date' => $workData->announceDate,
+                    'dlsite_release_date' => $workData->releaseDate,
+                    'dlsite_updated_date' => $workData->updatedDate,
                     'age_category' => $this->textOverride(
                         $input,
                         ProductField::AgeCategory,

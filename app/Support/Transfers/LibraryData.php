@@ -17,7 +17,7 @@ final class LibraryData
     public const FIELDS = [
         'titles' => ['work_name', 'work_name_english'],
         'descriptions' => ['description', 'description_english'],
-        'details' => ['maker_id', 'site_id', 'publisher', 'brand', 'series', 'age_category', 'product_format', 'related_editions', 'announce_date', 'dlsite_rating', 'dlsite_rating_count', 'notes'],
+        'details' => ['maker_id', 'site_id', 'publisher', 'brand', 'series', 'age_category', 'product_format', 'related_editions', 'announce_date', 'dlsite_release_date', 'dlsite_updated_date', 'dlsite_rating', 'dlsite_rating_count', 'notes'],
         'listening' => ['progress', 'score', 'priority', 'num_re_listen_times', 're_listen_value', 'start_date', 'end_date'],
     ];
 
@@ -29,6 +29,8 @@ final class LibraryData
     {
         $attributes = $product->attributesToArray();
         $attributes['announce_date'] = $product->announce_date?->format('Y-m-d H:i:s');
+        $attributes['dlsite_release_date'] = $product->dlsite_release_date?->format('Y-m-d H:i:s');
+        $attributes['dlsite_updated_date'] = $product->dlsite_updated_date?->format('Y-m-d H:i:s');
         $data = ['product_code' => strtoupper($product->id), 'created_at' => $product->created_at?->utc()->toIso8601ZuluString(), 'updated_at' => $product->updated_at?->utc()->toIso8601ZuluString()];
         foreach (self::FIELDS as $category => $fields) {
             $data[$category] = Arr::only($attributes, $fields);

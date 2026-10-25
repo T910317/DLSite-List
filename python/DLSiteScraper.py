@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import sys
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -81,6 +82,22 @@ def to_serializable(obj):
         return obj
     else:
         return str(obj)  # Fallback for anything weird
+
+
+WORK_DATE_FIELDS = ("regist_date", "modified_date")
+WORK_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+def work_date_fields(work):
+    """DLsite release (regist_date) and update (modified_date) dates as plain text, or None when unknown."""
+    fields = {}
+    for name in WORK_DATE_FIELDS:
+        value = getattr(work, name, None)
+        if isinstance(value, datetime):
+            fields[name] = value.strftime(WORK_DATE_FORMAT)
+        else:
+            fields[name] = None if value is None else str(value)
+    return fields
 
 
 def product_format_codes(work):
@@ -298,6 +315,8 @@ def run(arguments):
     traditional_chinese = to_serializable(work_traditional_chinese)
     japanese["product_format"] = product_format_codes(work_japanese)
     english["product_format"] = product_format_codes(work_english)
+    # Written explicitly so the release and update dates always reach Laravel, even when vars() misses them.
+    japanese.update(work_date_fields(work_japanese))
 
     # Leaving the key out means "unknown", so Laravel keeps the stored links.
     if editions is not None:

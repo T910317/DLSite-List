@@ -48,5 +48,6 @@ final readonly class ProductIndexSettings
         public bool $dlsiteAgeAppropriateLinksEnabled,
         public bool $dlsiteAnnounceLinksEnabled,
         public string $fetchedTagLanguage,
+        public string $workDateSource,
     ) {}
 }

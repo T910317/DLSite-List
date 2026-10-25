@@ -11,6 +11,8 @@ enum RefetchCategory: string
     case SiteId = 'site_id';
     case ProductFormat = 'product_format';
     case AnnouncementDate = 'announce_date';
+    case DlsiteReleaseDate = 'dlsite_release_date';
+    case DlsiteUpdatedDate = 'dlsite_updated_date';
     case Circle = 'circle';
     case Publisher = 'publisher';
     case Brand = 'brand';
@@ -33,6 +35,8 @@ enum RefetchCategory: string
             self::SiteId => __('Site ID'),
             self::ProductFormat => __('Product Format'),
             self::AnnouncementDate => __('Scheduled release date'),
+            self::DlsiteReleaseDate => __('Work release date'),
+            self::DlsiteUpdatedDate => __('Work update date'),
             self::Circle => __('Circle'),
             self::Publisher => __('Publisher'),
             self::Brand => __('Brand'),

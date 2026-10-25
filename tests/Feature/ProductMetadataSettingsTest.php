@@ -542,7 +542,8 @@ class ProductMetadataSettingsTest extends TestCase
     {
         Livewire::test(ProductFieldLayoutSettings::class)
             ->assertSet('indexFields.title.notes_visible', true)
-            ->assertSet('indexFields.created_at.visible', false)
+            ->assertSet('indexFields.created_at.visible', true)
+            ->assertSet('indexFields.work_date.visible', true)
             ->assertSet('indexFields.updated_at.visible', false)
             ->assertSet('indexFields.product_format.visible', false)
             ->assertSet('filterFields.product_format.visible', false)

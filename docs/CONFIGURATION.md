@@ -777,7 +777,8 @@ Fetched Tags are readonly by default. If made editable, editing changes only the
 - `num_re_listen_times` - hidden
 - `re_listen_value` - hidden
 - `priority` - hidden
-- `created_at` - hidden
+- `work_date` - shown as `Work release date` in Field Layout settings; shows the DLsite release date, or the update date when the Work release date section on the Options page is set to update date
+- `created_at` - shown as `Added to the site Date`
 - `updated_at` - hidden
 
 #### Index Filter Default Order
@@ -826,6 +827,7 @@ Fetched Tags are readonly by default. If made editable, editing changes only the
 - `re_listen_value`
 - `start_date`
 - `end_date`
+- `work_date`
 - `created_at`
 - `updated_at` - hidden
 - `circle` - hidden

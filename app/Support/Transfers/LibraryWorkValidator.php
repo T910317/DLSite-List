@@ -113,6 +113,8 @@ final class LibraryWorkValidator
             ...self::productFormatRules('details.product_format'),
             ...self::relatedEditionsRules('details.related_editions'),
             'details.announce_date' => ['sometimes', 'nullable', 'date'],
+            'details.dlsite_release_date' => ['sometimes', 'nullable', 'date'],
+            'details.dlsite_updated_date' => ['sometimes', 'nullable', 'date'],
             ...self::dlsiteRatingRules('details.dlsite_rating', 'details.dlsite_rating_count'),
             'details.notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'listening' => ['sometimes', 'array:' . implode(',', LibraryData::FIELDS['listening'])],

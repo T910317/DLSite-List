@@ -17,9 +17,11 @@ All notable changes to this project are documented in this file.
 * Added an optional Edition Grouping setting that shows other editions of a work in your library as one Index row, with a "Multiple languages" (or "Multiple versions") badge that links to each edition. Search and filters still check every edition. It is disabled by default.
 * Added an `Adaptive column widths` switch to Index Table Width, off by default. When it is on, Wide, Full, and custom table widths give the extra room to the Title and Tags columns instead of only Title, the Index no longer makes the page scroll sideways, and wide tables stay clear of the floating side menu on large screens. With the switch off, the Index looks the same as before.
 * The Refetch progress page now shows the works being fetched right now (product code and title), one line per work when several are fetched at once. The line is hidden once the Refetch finishes or is cancelled. This adds a nullable `fetch_started_at` column to `refetch_work_results`, applied by `php artisan migrate`.
+* Added a Work release date column to the Index, visible and sortable by default. It shows the DLsite release date. `Options -> Work release date` can switch it to the update date, and sorting follows that choice. Dates are saved when a work is added, refetched, and included in Import / Export. The migration fills them in from work data already saved on disk where that data has them; other works get their dates after a Refetch. This adds nullable `dlsite_release_date` and `dlsite_updated_date` columns to `products`, applied by `php artisan migrate`.
 
 ### Changed
 
+* The `Added to the site Date` column is now shown on the Index by default. It was hidden before.
 * The Index `Score` column is now titled `Ratings` because it shows both ratings. It still sorts by your own score. On narrow screens, Ratings and Series each use a full row of the work card.
 
 ### Security

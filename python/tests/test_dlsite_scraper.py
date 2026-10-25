@@ -1,6 +1,7 @@
 import asyncio
 import sys
 import unittest
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,6 +14,7 @@ from DLSiteScraper import (
     product_format_codes,
     rating_fields,
     to_serializable,
+    work_date_fields,
 )
 
 
@@ -253,6 +255,50 @@ class DLSiteScraperGenreLabelTest(unittest.TestCase):
         """
 
         self.assertEqual(["環繞音", "酪梨"], parse_work_html(content)["genre"])
+
+
+class DLSiteScraperWorkDateTest(unittest.TestCase):
+    def test_release_and_update_dates_are_written_as_plain_text(self):
+        work = SimpleNamespace(
+            regist_date=datetime(2025, 11, 22, 0, 0, 0),
+            modified_date=datetime(2026, 3, 7, 9, 30, 15),
+        )
+
+        self.assertEqual(
+            {
+                "regist_date": "2025-11-22 00:00:00",
+                "modified_date": "2026-03-07 09:30:15",
+            },
+            work_date_fields(work),
+        )
+
+    def test_unknown_dates_are_written_as_null(self):
+        work = SimpleNamespace(regist_date=None, modified_date=None)
+
+        self.assertEqual(
+            {"regist_date": None, "modified_date": None},
+            work_date_fields(work),
+        )
+
+    def test_missing_date_attributes_are_written_as_null(self):
+        self.assertEqual(
+            {"regist_date": None, "modified_date": None},
+            work_date_fields(SimpleNamespace()),
+        )
+
+    def test_dates_that_are_not_datetimes_keep_their_text(self):
+        work = SimpleNamespace(regist_date="2025-11-22", modified_date=None)
+
+        self.assertEqual(
+            {"regist_date": "2025-11-22", "modified_date": None},
+            work_date_fields(work),
+        )
+
+    def test_datetime_serializes_to_the_same_text_as_the_date_fields(self):
+        self.assertEqual(
+            "2025-11-22 00:00:00",
+            to_serializable(datetime(2025, 11, 22, 0, 0, 0)),
+        )
 
 
 if __name__ == "__main__":

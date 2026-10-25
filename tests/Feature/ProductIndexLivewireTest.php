@@ -1011,7 +1011,7 @@ class ProductIndexLivewireTest extends TestCase
         ]);
 
         Livewire::test(ProductIndex::class)
-            ->assertDontSee('2026-04-05 06:07')
+            ->assertSee('2026-04-05 06:07')
             ->assertDontSee('2026-08-09 10:11');
 
         Option::setIndexFieldLayout([
@@ -2811,6 +2811,52 @@ class ProductIndexLivewireTest extends TestCase
             fn(DOMElement $link): string => trim($link->textContent),
             iterator_to_array($links),
         );
+    }
+
+    public function test_work_date_column_shows_the_release_date_by_default_and_can_switch_to_update_date(): void
+    {
+        $this->createProduct(1, [
+            'work_name' => 'WORK_DATE_SOURCE',
+            'dlsite_release_date' => Carbon::parse('2026-03-01 09:00:00'),
+            'dlsite_updated_date' => Carbon::parse('2026-04-02 10:30:00'),
+        ]);
+
+        Livewire::test(ProductIndex::class)
+            ->assertSee('data-column="Work release date"', false)
+            ->assertSee('2026-03-01 09:00')
+            ->assertDontSee('2026-04-02 10:30');
+
+        Option::setIndexWorkDateSource(Option::INDEX_WORK_DATE_SOURCE_UPDATED);
+
+        Livewire::test(ProductIndex::class)
+            ->assertSee('2026-04-02 10:30')
+            ->assertDontSee('2026-03-01 09:00');
+    }
+
+    public function test_work_date_sort_follows_the_selected_release_or_update_date(): void
+    {
+        $this->createProduct(1, [
+            'work_name' => 'WORK_DATE_FIRST',
+            'dlsite_release_date' => Carbon::parse('2026-01-10 00:00:00'),
+            'dlsite_updated_date' => Carbon::parse('2026-06-01 00:00:00'),
+        ]);
+        $this->createProduct(2, [
+            'work_name' => 'WORK_DATE_SECOND',
+            'dlsite_release_date' => Carbon::parse('2026-02-10 00:00:00'),
+            'dlsite_updated_date' => Carbon::parse('2026-05-01 00:00:00'),
+        ]);
+
+        // Descending by the release date puts WORK_DATE_SECOND first.
+        Livewire::test(ProductIndex::class)
+            ->call('sortByHeader', 'work_date')
+            ->assertSeeInOrder(['WORK_DATE_SECOND', 'WORK_DATE_FIRST']);
+
+        Option::setIndexWorkDateSource(Option::INDEX_WORK_DATE_SOURCE_UPDATED);
+
+        // Descending by the update date puts WORK_DATE_FIRST first.
+        Livewire::test(ProductIndex::class)
+            ->call('sortByHeader', 'work_date')
+            ->assertSeeInOrder(['WORK_DATE_FIRST', 'WORK_DATE_SECOND']);
     }
 
     private function createProduct(int $number, array $attributes = []): Product

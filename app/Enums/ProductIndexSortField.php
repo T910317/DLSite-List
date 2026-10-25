@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Enums\Concerns\ProvidesOptions;
+use App\Models\Option;
 use App\Support\ContentTerminology;
 
 enum ProductIndexSortField: string
@@ -23,6 +24,7 @@ enum ProductIndexSortField: string
     case ReListenValue = 're_listen_value';
     case StartDate = 'start_date';
     case FinishDate = 'end_date';
+    case WorkDate = 'work_date';
     case AddedToTheSiteDate = 'created_at';
     case UpdatedAt = 'updated_at';
     case Circle = 'circle';
@@ -51,6 +53,7 @@ enum ProductIndexSortField: string
             self::ReListenValue => app(ContentTerminology::class)->repeatValue(),
             self::StartDate => __('Start Date'),
             self::FinishDate => __('Finish Date'),
+            self::WorkDate => __('Work release date'),
             self::AddedToTheSiteDate => __('Added to the site Date'),
             self::UpdatedAt => __('Updated Date'),
             self::Circle => __('Circle'),
@@ -72,6 +75,10 @@ enum ProductIndexSortField: string
             self::StartDate => 'start_date_sort',
             self::FinishDate => 'end_date_sort',
             self::ProductFormat => 'product_format->[0]',
+            // Sorts by the same date the Index column shows, chosen in the work date setting.
+            self::WorkDate => Option::indexWorkDateSource() === Option::INDEX_WORK_DATE_SOURCE_UPDATED
+                ? 'dlsite_updated_date'
+                : 'dlsite_release_date',
             default => $this->value,
         };
     }

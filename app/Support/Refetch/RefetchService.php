@@ -568,6 +568,8 @@ final class RefetchService
                 RefetchCategory::Brand,
                 RefetchCategory::ProductFormat,
                 RefetchCategory::AnnouncementDate,
+                RefetchCategory::DlsiteReleaseDate,
+                RefetchCategory::DlsiteUpdatedDate,
             ], true)) {
                 $value = $change['new'];
 

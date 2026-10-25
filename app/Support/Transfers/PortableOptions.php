@@ -45,6 +45,7 @@ final class PortableOptions
         Option::INDEX_TABLE_WIDTH,
         Option::INDEX_ADAPTIVE_COLUMN_WIDTHS_ENABLED,
         Option::INDEX_CONTENT_OVERFLOW,
+        Option::INDEX_WORK_DATE_SOURCE,
         Option::INDEX_SORT_FIELD_LAYOUT,
         Option::INDEX_FIELD_LAYOUT,
         Option::EDIT_FIELD_LAYOUT,
@@ -175,6 +176,7 @@ final class PortableOptions
             Option::PRODUCT_FORM_THEME => ['value' => ['required', Rule::in(array_keys(Option::PRODUCT_FORM_THEME_OPTIONS))]],
             Option::AUTHENTICATION_PAGE_THEME => ['value' => ['required', Rule::in(array_keys(Option::AUTHENTICATION_PAGE_THEME_OPTIONS))]],
             Option::PRODUCT_FORM_MODAL_COMPLETION_ACTION => ['value' => ['required', Rule::in(array_keys(Option::PRODUCT_FORM_MODAL_COMPLETION_OPTIONS))]],
+            Option::INDEX_WORK_DATE_SOURCE => ['value' => ['required', Rule::in(array_keys(Option::INDEX_WORK_DATE_SOURCE_OPTIONS))]],
             Option::OPTIONAL_PRODUCT_STATUSES => [
                 'value' => ['required', 'array:' . implode(',', array_keys(Option::DEFAULT_OPTIONAL_PRODUCT_STATUSES))],
                 'value.*' => ['sometimes', 'boolean:strict'],

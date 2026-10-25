@@ -95,6 +95,12 @@ class Option extends Model
 
     public const INDEX_CONTENT_OVERFLOW = 'index_content_overflow';
 
+    public const INDEX_WORK_DATE_SOURCE = 'index_work_date_source';
+
+    public const INDEX_WORK_DATE_SOURCE_RELEASE = 'release';
+
+    public const INDEX_WORK_DATE_SOURCE_UPDATED = 'updated';
+
     public const INDEX_PER_PAGE_UNLIMITED = 'unlimited';
 
     public const INDEX_TABLE_WIDTH_DEFAULT = 'default';
@@ -141,6 +147,11 @@ class Option extends Model
         self::INDEX_TABLE_WIDTH_WIDE => 'Wide',
         self::INDEX_TABLE_WIDTH_FULL => 'Full',
         self::INDEX_TABLE_WIDTH_CUSTOM => 'Custom',
+    ];
+
+    public const INDEX_WORK_DATE_SOURCE_OPTIONS = [
+        self::INDEX_WORK_DATE_SOURCE_RELEASE => 'Work release date',
+        self::INDEX_WORK_DATE_SOURCE_UPDATED => 'Work update date',
     ];
 
     public const PRODUCT_FORM_THEME_OPTIONS = [
@@ -205,6 +216,7 @@ class Option extends Model
         self::INDEX_TABLE_WIDTH,
         self::INDEX_ADAPTIVE_COLUMN_WIDTHS_ENABLED,
         self::INDEX_CONTENT_OVERFLOW,
+        self::INDEX_WORK_DATE_SOURCE,
         self::INDEX_SORT_FIELD_LAYOUT,
     ];
 
@@ -241,6 +253,7 @@ class Option extends Model
         self::INDEX_TABLE_WIDTH,
         self::INDEX_ADAPTIVE_COLUMN_WIDTHS_ENABLED,
         self::INDEX_CONTENT_OVERFLOW,
+        self::INDEX_WORK_DATE_SOURCE,
     ];
 
     protected $fillable = [
@@ -308,6 +321,7 @@ class Option extends Model
             self::INDEX_TABLE_WIDTH => ['mode' => self::INDEX_TABLE_WIDTH_DEFAULT, 'custom' => ''],
             self::INDEX_ADAPTIVE_COLUMN_WIDTHS_ENABLED => false,
             self::INDEX_CONTENT_OVERFLOW => ProductIndexContentOverflow::DEFAULTS,
+            self::INDEX_WORK_DATE_SOURCE => self::INDEX_WORK_DATE_SOURCE_RELEASE,
             self::INDEX_SORT_FIELD_LAYOUT => ProductIndexSortField::storageLayout([]),
             default => throw new InvalidArgumentException('Unknown option: ' . $key),
         };
@@ -941,6 +955,38 @@ class Option extends Model
         self::forget(self::INDEX_CONTENT_OVERFLOW);
     }
 
+    /**
+     * Which DLsite date the "Work release date" column and its sort use.
+     */
+    public static function indexWorkDateSource(): string
+    {
+        return self::indexWorkDateSourceFromValue(self::valueFor(self::INDEX_WORK_DATE_SOURCE));
+    }
+
+    /**
+     * Turns a stored value into a usable source, falling back to the release date.
+     */
+    private static function indexWorkDateSourceFromValue(mixed $source): string
+    {
+        return is_string($source) && isset(self::INDEX_WORK_DATE_SOURCE_OPTIONS[$source])
+            ? $source
+            : self::INDEX_WORK_DATE_SOURCE_RELEASE;
+    }
+
+    public static function setIndexWorkDateSource(string $source): void
+    {
+        if (! isset(self::INDEX_WORK_DATE_SOURCE_OPTIONS[$source])) {
+            throw new InvalidArgumentException('Unknown work date source: ' . $source);
+        }
+
+        self::setValue(self::INDEX_WORK_DATE_SOURCE, $source);
+    }
+
+    public static function resetIndexWorkDateSourceToDefault(): void
+    {
+        self::forget(self::INDEX_WORK_DATE_SOURCE);
+    }
+
     public static function resetVisibleSettingsToDefault(): void
     {
         self::forget(...self::RESETTABLE_OPTIONS);
@@ -970,6 +1016,7 @@ class Option extends Model
                 self::DLSITE_ANNOUNCE_LINKS_ENABLED,
                 self::FETCHED_TAG_LANGUAGE_FOLLOWS_UI,
                 self::FETCHED_TAG_LANGUAGE,
+                self::INDEX_WORK_DATE_SOURCE,
             ])
             ->pluck('value', 'key');
 
@@ -986,6 +1033,7 @@ class Option extends Model
             $values->get(self::INDEX_SORT_FIELD_LAYOUT),
         );
         $tableWidth = self::normalizeIndexTableWidth(self::jsonFromValue($values->get(self::INDEX_TABLE_WIDTH)));
+        $workDateSource = self::indexWorkDateSourceFromValue($values->get(self::INDEX_WORK_DATE_SOURCE));
         $fetchedTagLanguage = self::effectiveFetchedTagLanguageFromValues(
             $values->get(self::FETCHED_TAG_LANGUAGE_FOLLOWS_UI),
             $values->get(self::FETCHED_TAG_LANGUAGE),
@@ -1052,6 +1100,7 @@ class Option extends Model
                 self::defaultFor(self::DLSITE_ANNOUNCE_LINKS_ENABLED),
             ),
             fetchedTagLanguage: $fetchedTagLanguage->value,
+            workDateSource: $workDateSource,
         );
     }
 

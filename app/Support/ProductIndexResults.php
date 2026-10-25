@@ -44,6 +44,7 @@ final class ProductIndexResults
         'num_re_listen_times' => ['num_re_listen_times'],
         're_listen_value' => ['re_listen_value'],
         'priority' => ['priority'],
+        'work_date' => ['dlsite_release_date', 'dlsite_updated_date'],
         'created_at' => ['created_at'],
         'updated_at' => ['updated_at'],
         'circle' => ['circle', 'maker_id'],
@@ -64,6 +65,7 @@ final class ProductIndexResults
         'num_re_listen_times',
         're_listen_value',
         'priority',
+        'work_date',
         'created_at',
         'updated_at',
     ];
@@ -563,7 +565,7 @@ final class ProductIndexResults
             ->map(fn($rows) => $rows->groupBy('role'));
     }
 
-    public function displayValues(EloquentCollection $products, array $visibleFields): Collection
+    public function displayValues(EloquentCollection $products, array $visibleFields, ?string $workDateSource = null): Collection
     {
         $fields = array_intersect(self::DISPLAY_VALUE_FIELDS, $visibleFields);
 
@@ -571,11 +573,16 @@ final class ProductIndexResults
             return collect();
         }
 
-        return $products->mapWithKeys(function (Product $product) use ($fields): array {
+        // The page passes in the source it already loaded with its settings; only read it when none is given.
+        $workDateSource ??= Option::indexWorkDateSource();
+
+        return $products->mapWithKeys(function (Product $product) use ($fields, $workDateSource): array {
             $values = [];
 
             foreach ($fields as $field) {
-                $values[$field] = $this->displayValue($product, $field);
+                $values[$field] = $field === 'work_date'
+                    ? $this->workDateDisplayValue($product, $workDateSource)
+                    : $this->displayValue($product, $field);
             }
 
             return [$product->getKey() => $values];
@@ -826,6 +833,15 @@ final class ProductIndexResults
             'updated_at' => $product->updated_at?->format('Y-m-d H:i') ?? '-',
             default => '-',
         };
+    }
+
+    private function workDateDisplayValue(Product $product, string $source): string
+    {
+        $date = $source === Option::INDEX_WORK_DATE_SOURCE_UPDATED
+            ? $product->dlsite_updated_date
+            : $product->dlsite_release_date;
+
+        return $date?->format('Y-m-d H:i') ?? '-';
     }
 
     private function productFormatDisplayValue(?array $formats): string

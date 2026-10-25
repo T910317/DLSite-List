@@ -187,7 +187,11 @@ class ProductIndex extends Component
             $visibleProductIds,
             $settings->visibleIndexFields,
         );
-        $productDisplayValues = $productIndexResults->displayValues($visibleProducts, $settings->visibleIndexFields);
+        $productDisplayValues = $productIndexResults->displayValues(
+            $visibleProducts,
+            $settings->visibleIndexFields,
+            $settings->workDateSource,
+        );
 
         $currentQuery = $this->queryWithCurrentPage($filterQuery, $isUnlimited);
         $tagLinkQuery = $filters->toQueryWithout('genre');

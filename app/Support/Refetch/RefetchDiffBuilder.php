@@ -38,6 +38,8 @@ final class RefetchDiffBuilder
         $this->add($changes, RefetchCategory::SiteId, 'site_id', 'Site ID', $product->site_id, $work->siteId);
         $this->addProductFormat($changes, RefetchCategory::ProductFormat, 'product_format', 'Product Format', $product->product_format ?? [], $work->productFormat);
         $this->add($changes, RefetchCategory::AnnouncementDate, 'announce_date', 'Scheduled release date', $product->announce_date?->format('Y-m-d H:i:s'), $work->announceDate);
+        $this->add($changes, RefetchCategory::DlsiteReleaseDate, 'dlsite_release_date', 'Work release date', $product->dlsite_release_date?->format('Y-m-d H:i:s'), $work->releaseDate);
+        $this->add($changes, RefetchCategory::DlsiteUpdatedDate, 'dlsite_updated_date', 'Work update date', $product->dlsite_updated_date?->format('Y-m-d H:i:s'), $work->updatedDate);
         $this->add(
             $changes,
             RefetchCategory::Circle,
