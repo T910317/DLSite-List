@@ -861,6 +861,36 @@ body.options-page {
     transition: width 0.25s ease;
 }
 
+.options-page .refetch-current-works {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    color: var(--options-text);
+    font-size: 12px;
+}
+
+.options-page .refetch-current-works__label {
+    flex: none;
+}
+
+.options-page .refetch-current-works ul {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.options-page .refetch-current-works li {
+    overflow-wrap: anywhere;
+}
+
+.options-page .refetch-current-works strong {
+    margin-right: 6px;
+    color: var(--options-link);
+}
+
 .options-page .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));

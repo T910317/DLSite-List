@@ -509,6 +509,7 @@
     ":processed / :total work processed|:processed / :total works processed": "已處理 :processed / :total 部作品",
     "Total": "總計",
     "Cancel Refetch": "取消重新擷取",
+    "Now fetching:": "正在擷取：",
     "Tag changes": "標籤變更",
     "New JP tags": "新增的日文標籤",
     "New EN tags": "新增的英文標籤",

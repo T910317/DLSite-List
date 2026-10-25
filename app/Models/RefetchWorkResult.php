@@ -29,6 +29,7 @@ class RefetchWorkResult extends Model
         'changes' => 'array',
         'decisions' => 'array',
         'warnings' => 'array',
+        'fetch_started_at' => 'datetime',
     ];
 
     public function run(): BelongsTo
