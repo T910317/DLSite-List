@@ -337,6 +337,10 @@
         {{ $productDisplayValues[$product->id][$column['field']] ?? '-' }}
     @break
 
+    @case('work_date')
+        {{ $productDisplayValues[$product->id][$column['field']] ?? '-' }}
+    @break
+
     @case('created_at')
         {{ $productDisplayValues[$product->id][$column['field']] ?? '-' }}
     @break

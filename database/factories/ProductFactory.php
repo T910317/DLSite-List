@@ -27,6 +27,8 @@ class ProductFactory extends Factory
             'age_category' => 'ALL_AGES',
             'product_format' => null,
             'announce_date' => null,
+            'dlsite_release_date' => null,
+            'dlsite_updated_date' => null,
             'circle' => 'Circle',
             'work_image' => "storage/Works/{$id}/cover.jpg",
             'description' => 'Description',

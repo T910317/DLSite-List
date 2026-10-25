@@ -33,6 +33,8 @@ final class ImportValue
             'product_format' => __('Product Format'),
             'related_editions' => __('Other editions'),
             'announce_date' => __('Scheduled release date'),
+            'dlsite_release_date' => __('Work release date'),
+            'dlsite_updated_date' => __('Work update date'),
             'product_code' => __('Product Code'),
             'site_id' => __('Site ID'),
             'tag-library' => __('Tag Library'),

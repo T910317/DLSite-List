@@ -307,6 +307,65 @@ class FullRefetchTest extends TestCase
         ];
     }
 
+    public static function workDateReviewActions(): array
+    {
+        return [
+            'release accept new date' => ['dlsite_release_date', RefetchService::ACTION_OVERWRITE, '2026-03-01 09:00:00', '2026-03-01 09:00:00', true],
+            'release ignore new date' => ['dlsite_release_date', RefetchService::ACTION_IGNORE, '2026-03-01 09:00:00', '2026-01-05 00:00:00', false],
+            'update accept new date' => ['dlsite_updated_date', RefetchService::ACTION_OVERWRITE, '2026-04-02 10:30:00', '2026-04-02 10:30:00', true],
+            'update ignore new date' => ['dlsite_updated_date', RefetchService::ACTION_IGNORE, '2026-04-02 10:30:00', '2026-02-01 00:00:00', false],
+        ];
+    }
+
+    #[DataProvider('workDateReviewActions')]
+    public function test_work_date_review_respects_overwrite_and_ignore(
+        string $field,
+        string $action,
+        string $newDate,
+        string $expectedDate,
+        bool $expectedChanged,
+    ): void {
+        Storage::fake('local');
+        Storage::fake('public');
+        $product = Product::factory()->create([
+            'dlsite_release_date' => '2026-01-05 00:00:00',
+            'dlsite_updated_date' => '2026-02-01 00:00:00',
+        ]);
+        $oldDate = $product->{$field}?->format('Y-m-d H:i:s');
+        $run = app(RefetchService::class)->createRun([$product->id], false);
+        Storage::disk('local')->put(
+            "Refetch/{$run->id}/Works/{$product->id}.json",
+            json_encode(['japanese' => ['product_id' => $product->id], 'english' => []], JSON_THROW_ON_ERROR),
+        );
+        $result = $run->results()->firstOrFail();
+        $result->forceFill([
+            'status' => RefetchWorkResult::STATUS_FETCHED,
+            'changes' => [
+                $field => [
+                    $field => [
+                        'label' => 'Work release date',
+                        'old' => $oldDate,
+                        'new' => $newDate,
+                    ],
+                ],
+            ],
+        ])->save();
+        $run->forceFill([
+            'status' => RefetchRun::STATUS_REVIEW,
+            'processed_count' => 1,
+            'fetched_count' => 1,
+            'completed_at' => now(),
+            'resolved_tabs' => array_values(array_diff(RefetchCategory::values(), [$field])),
+        ])->save();
+
+        app(RefetchService::class)->applyTab($run, RefetchCategory::from($field), $action);
+
+        $this->assertSame($expectedDate, $product->fresh()->{$field}?->format('Y-m-d H:i:s'));
+        $this->assertSame($action, data_get($result->fresh()->decisions, "{$field}.{$field}.action"));
+        $this->assertSame($expectedChanged, data_get($result->fresh()->decisions, "{$field}.{$field}.changed"));
+        $this->assertTrue($run->fresh()->tabResolved(RefetchCategory::from($field)));
+    }
+
     public function test_product_format_ignore_preserves_current_value(): void
     {
         $product = Product::factory()->create([

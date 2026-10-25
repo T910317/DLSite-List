@@ -34,6 +34,10 @@ final readonly class DLSiteWorkData
         public ?array $relatedEditions = null,
         /** Null when the rating could not be read, so stored values are kept. */
         public ?DLSiteRating $rating = null,
+        /** DLsite release date (regist_date) as "Y-m-d H:i:s", or null when unknown. */
+        public ?string $releaseDate = null,
+        /** DLsite last update date (modified_date) as "Y-m-d H:i:s", or null when unknown. */
+        public ?string $updatedDate = null,
     ) {}
 
     public static function fromArray(array $workData, ?string $fallbackProductId = null): self
@@ -75,6 +79,8 @@ final readonly class DLSiteWorkData
             traditionalChineseGenres: $traditionalChinese === null ? null : self::list($traditionalChinese['genre'] ?? []),
             relatedEditions: RelatedEditions::fromWorkData($japanese, $english, $productId),
             rating: DLSiteRating::fromLocales($japanese, $english),
+            releaseDate: self::text($japanese['regist_date'] ?? $english['regist_date'] ?? null),
+            updatedDate: self::text($japanese['modified_date'] ?? $english['modified_date'] ?? null),
         );
     }
 

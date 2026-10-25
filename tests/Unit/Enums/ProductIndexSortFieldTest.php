@@ -33,6 +33,7 @@ class ProductIndexSortFieldTest extends TestCase
             ProductIndexSortField::ReListenValue->value => 're_listen_value',
             ProductIndexSortField::StartDate->value => 'start_date_sort',
             ProductIndexSortField::FinishDate->value => 'end_date_sort',
+            ProductIndexSortField::WorkDate->value => 'dlsite_release_date',
             ProductIndexSortField::AddedToTheSiteDate->value => 'created_at',
             ProductIndexSortField::UpdatedAt->value => 'updated_at',
             ProductIndexSortField::Circle->value => 'circle',
@@ -67,6 +68,7 @@ class ProductIndexSortFieldTest extends TestCase
             ProductIndexSortField::ReListenValue->value,
             ProductIndexSortField::StartDate->value,
             ProductIndexSortField::FinishDate->value,
+            ProductIndexSortField::WorkDate->value,
             ProductIndexSortField::AddedToTheSiteDate->value,
             ProductIndexSortField::UpdatedAt->value,
             ProductIndexSortField::Circle->value,
@@ -82,6 +84,7 @@ class ProductIndexSortFieldTest extends TestCase
         $visibleOptions = ProductIndexSortField::optionsFromLayout(ProductIndexSortField::normalizeLayout(null));
 
         $this->assertArrayHasKey(ProductIndexSortField::AddedToTheSiteDate->value, $visibleOptions);
+        $this->assertArrayHasKey(ProductIndexSortField::WorkDate->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::UpdatedAt->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::Title->value, $visibleOptions);
         $this->assertArrayNotHasKey(ProductIndexSortField::ProductFormat->value, $visibleOptions);
@@ -115,6 +118,7 @@ class ProductIndexSortFieldTest extends TestCase
             ProductIndexSortField::ReListenValue->value,
             ProductIndexSortField::StartDate->value,
             ProductIndexSortField::FinishDate->value,
+            ProductIndexSortField::WorkDate->value,
             ProductIndexSortField::AddedToTheSiteDate->value,
             ProductIndexSortField::UpdatedAt->value,
             ProductIndexSortField::Circle->value,
@@ -157,6 +161,7 @@ class ProductIndexSortFieldTest extends TestCase
             ['field' => ProductIndexSortField::ReListenValue->value, 'visible' => true],
             ['field' => ProductIndexSortField::StartDate->value, 'visible' => true],
             ['field' => ProductIndexSortField::FinishDate->value, 'visible' => true],
+            ['field' => ProductIndexSortField::WorkDate->value, 'visible' => true],
             ['field' => ProductIndexSortField::AddedToTheSiteDate->value, 'visible' => true],
             ['field' => ProductIndexSortField::UpdatedAt->value, 'visible' => false],
             ['field' => ProductIndexSortField::Circle->value, 'visible' => false],

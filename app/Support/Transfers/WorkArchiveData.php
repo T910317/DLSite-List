@@ -183,6 +183,10 @@ final class WorkArchiveData
             ...LibraryWorkValidator::relatedEditionsRules('english.related_editions'),
             'japanese.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
             'english.announce_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
+            'japanese.regist_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
+            'english.regist_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
+            'japanese.modified_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
+            'english.modified_date' => ['sometimes', 'nullable', 'date_format:Y-m-d H:i:s'],
             ...LibraryWorkValidator::dlsiteRatingRules('japanese.' . DLSiteRating::AVERAGE_KEY, 'japanese.' . DLSiteRating::COUNT_KEY),
             ...LibraryWorkValidator::dlsiteRatingRules('english.' . DLSiteRating::AVERAGE_KEY, 'english.' . DLSiteRating::COUNT_KEY),
             'dlsite_list.site_id' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/\A[a-z][a-z0-9_-]*\z/'],
@@ -250,6 +254,13 @@ final class WorkArchiveData
         if ($this->hasEither($document, 'announce_date')) {
             $details['announce_date'] = $work->announceDate;
         }
+        // Archives made before DLsite release and update dates were stored carry null here; keep the stored dates.
+        if ($work->releaseDate !== null) {
+            $details['dlsite_release_date'] = $work->releaseDate;
+        }
+        if ($work->updatedDate !== null) {
+            $details['dlsite_updated_date'] = $work->updatedDate;
+        }
         // Archives made before ratings were stored leave the stored rating untouched.
         if ($work->rating !== null) {
             $details = [...$details, ...$work->rating->attributes()];
@@ -311,12 +322,12 @@ final class WorkArchiveData
             'brand' => $product->brand,
             'publisher' => $product->publisher,
             'work_image' => $cover,
-            'regist_date' => null,
+            'regist_date' => $product->dlsite_release_date?->format('Y-m-d H:i:s'),
             'work_type' => null,
             'product_format' => $product->product_format,
             'book_type' => null,
             'announce_date' => $product->announce_date?->format('Y-m-d H:i:s'),
-            'modified_date' => null,
+            'modified_date' => $product->dlsite_updated_date?->format('Y-m-d H:i:s'),
             'scenario' => $contributors['scenario'],
             'illustration' => $contributors['illustration'],
             'voice_actor' => $contributors['voice_actor'],

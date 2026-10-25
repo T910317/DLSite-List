@@ -387,6 +387,44 @@ class LibraryTransferImportTest extends TestCase
         $this->assertSame('2026-09-24 00:00:00', Product::findOrFail('RJ123456')->announce_date?->format('Y-m-d H:i:s'));
     }
 
+    public function test_dlsite_work_dates_round_trip_when_importing_a_deleted_local_record(): void
+    {
+        $product = Product::factory()->create([
+            'id' => 'RJ123456',
+            'dlsite_release_date' => '2026-03-01 09:00:00',
+            'dlsite_updated_date' => '2026-04-02 10:30:00',
+        ]);
+        $export = $this->exported();
+        $product->delete();
+
+        $run = $this->imported($export);
+        $this->apply($run);
+
+        $restored = Product::findOrFail('RJ123456');
+        $this->assertSame('2026-03-01 09:00:00', $restored->dlsite_release_date?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-04-02 10:30:00', $restored->dlsite_updated_date?->format('Y-m-d H:i:s'));
+    }
+
+    public function test_archive_without_dlsite_dates_preserves_existing_local_dates(): void
+    {
+        // The archive is exported while the work has no DLsite dates, so its date values are empty.
+        Product::factory()->create(['id' => 'RJ123456']);
+        $export = $this->exported();
+        Product::findOrFail('RJ123456')->update([
+            'dlsite_release_date' => '2026-03-01 09:00:00',
+            'dlsite_updated_date' => '2026-04-02 10:30:00',
+        ]);
+
+        $run = $this->imported($export);
+        $this->assertFalse($run->items()->where('category', 'dlsite_release_date')->exists());
+        $this->assertFalse($run->items()->where('category', 'dlsite_updated_date')->exists());
+        $this->apply($run);
+
+        $kept = Product::findOrFail('RJ123456');
+        $this->assertSame('2026-03-01 09:00:00', $kept->dlsite_release_date?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-04-02 10:30:00', $kept->dlsite_updated_date?->format('Y-m-d H:i:s'));
+    }
+
     public function test_schema_v1_archive_imports_released_identifiers_images_and_option_layouts(): void
     {
         $product = Product::factory()->create([

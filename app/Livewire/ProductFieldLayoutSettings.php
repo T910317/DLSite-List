@@ -157,6 +157,8 @@ class ProductFieldLayoutSettings extends Component
             ['index', ProductField::MakerNames->value] => __('Combines the separate Circle, Publisher, and Brand fields into one Index column.'),
             ['filter', ProductField::MakerNames->value] => __('Searches Circle, Publisher, and Brand together.'),
             ['sort', ProductIndexSortField::MakerNames->value] => __('Sorts by the first available name: Circle, then Publisher, then Brand.'),
+            ['index', ProductField::WorkDate->value] => __('Shows the work\'s DLsite release date. The Work release date setting can switch it to the update date.'),
+            ['sort', ProductIndexSortField::WorkDate->value] => __('Sorts by the work\'s DLsite release date, or by its update date when the Work release date setting is switched.'),
             ['index', ProductField::UpdatedAt->value] => __('Shows when the work was last updated in your library.'),
             ['filter', ProductField::UpdatedAt->value] => __('Filters by when the work was last updated in your library.'),
             ['sort', ProductIndexSortField::UpdatedAt->value] => __('Sorts by when the work was last updated in your library.'),

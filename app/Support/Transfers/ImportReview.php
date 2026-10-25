@@ -37,6 +37,8 @@ final class ImportReview
             'product_format',
             'related_editions',
             'announce_date',
+            'dlsite_release_date',
+            'dlsite_updated_date',
             'circle',
             'publisher',
             'brand',
@@ -73,6 +75,8 @@ final class ImportReview
         'product_format' => ['details', 'product_format'],
         'related_editions' => ['details', 'related_editions'],
         'announce_date' => ['details', 'announce_date'],
+        'dlsite_release_date' => ['details', 'dlsite_release_date'],
+        'dlsite_updated_date' => ['details', 'dlsite_updated_date'],
         'dlsite_rating' => ['details', 'dlsite_rating'],
         'dlsite_rating_count' => ['details', 'dlsite_rating_count'],
         'maker' => ['details', 'maker_id'],
@@ -542,8 +546,8 @@ final class ImportReview
                 : Arr::only($current, array_keys($incoming));
         }
         if (isset($item->metadata['field'])) {
-            if ($item->metadata['field'] === 'announce_date') {
-                return $product->announce_date?->format('Y-m-d H:i:s');
+            if (in_array($item->metadata['field'], ['announce_date', 'dlsite_release_date', 'dlsite_updated_date'], true)) {
+                return $product->getAttribute($item->metadata['field'])?->format('Y-m-d H:i:s');
             }
 
             return $product->getAttribute($item->metadata['field']);

@@ -65,6 +65,7 @@ class ProductFieldLayoutTest extends TestCase
                 ProductField::TotalTimesReListened,
                 ProductField::ReListenValue,
                 ProductField::Priority,
+                ProductField::WorkDate,
                 ProductField::CreatedAt,
                 ProductField::UpdatedAt,
             ],
@@ -248,7 +249,9 @@ class ProductFieldLayoutTest extends TestCase
             $this->assertFalse(ProductField::AnnouncementDate->isAvailableOn($surface));
         }
         $this->assertTrue(ProductField::Notes->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
-        $this->assertTrue(ProductField::CreatedAt->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertTrue(ProductField::WorkDate->isAvailableOn(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertFalse(ProductField::WorkDate->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
+        $this->assertFalse(ProductField::CreatedAt->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
         $this->assertTrue(ProductField::UpdatedAt->isHiddenByDefault(ProductFieldLayout::SURFACE_INDEX));
     }
 
@@ -285,6 +288,7 @@ class ProductFieldLayoutTest extends TestCase
             ProductField::TotalTimesReListened->value,
             ProductField::ReListenValue->value,
             ProductField::Priority->value,
+            ProductField::WorkDate->value,
             ProductField::CreatedAt->value,
             ProductField::UpdatedAt->value,
         ], collect($layout)->pluck('field')->all());
@@ -297,6 +301,8 @@ class ProductFieldLayoutTest extends TestCase
             ProductField::AgeCategory->value,
             ProductField::Progress->value,
             ProductField::Tags->value,
+            ProductField::WorkDate->value,
+            ProductField::CreatedAt->value,
         ], ProductFieldLayout::visibleFields($layout));
 
         $this->assertFalse($layout[1]['visible']);
@@ -655,6 +661,7 @@ class ProductFieldLayoutTest extends TestCase
             ['field' => ProductField::Circle->value, 'label' => 'Circle', 'visible' => true],
             ['field' => ProductField::Score->value, 'label' => 'Score', 'visible' => true],
             ['field' => ProductField::StartDate->value, 'label' => 'Start Date', 'visible' => true],
+            ['field' => ProductField::WorkDate->value, 'label' => 'Work release date', 'visible' => true],
             ['field' => ProductField::CreatedAt->value, 'label' => 'Added to the site Date', 'visible' => true],
             ['field' => ProductField::UpdatedAt->value, 'label' => 'Updated Date', 'visible' => true],
             ['field' => 'not_real', 'label' => 'Broken', 'visible' => true],
@@ -687,6 +694,13 @@ class ProductFieldLayoutTest extends TestCase
                 'label' => 'Start Date',
                 'class' => 'start-date',
                 'sort_field' => 'start_date',
+                'contributor_role' => null,
+            ],
+            [
+                'field' => ProductField::WorkDate->value,
+                'label' => 'Work release date',
+                'class' => 'work-date',
+                'sort_field' => 'work_date',
                 'contributor_role' => null,
             ],
             [
