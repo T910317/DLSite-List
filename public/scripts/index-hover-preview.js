@@ -8,6 +8,8 @@
     const SHOW_DELAY_MS = 300;
     const CACHE_LIMIT = 50;
     const IMAGE_CHECK_LIMIT = 500;
+    // A request that never settles is treated as unavailable for this preview; the next one retries it.
+    const IMAGE_CHECK_TIMEOUT_MS = 10000;
     // One page per wheel notch; trackpads send many small deltas, so they are summed first.
     const WHEEL_STEP = 40;
     const WHEEL_COOLDOWN_MS = 150;
@@ -274,7 +276,13 @@
         const stage = active.stage;
 
         active.page = page;
-        stage.querySelector('.index-hover-preview__image').src = pages[page];
+
+        const image = stage.querySelector('.index-hover-preview__image');
+
+        if (image.getAttribute('src') !== pages[page]) {
+            image.src = pages[page];
+        }
+
         stage.querySelector('.index-hover-preview__counter').textContent = `${page + 1} / ${pages.length}`;
         stage.querySelector('[data-index-hover-preview-previous]').disabled = page === 0;
         stage.querySelector('[data-index-hover-preview-next]').disabled = page === pages.length - 1;
@@ -286,6 +294,7 @@
         }
     };
 
+    // Called again each time another image finishes its check; the image on screen stays put.
     const renderPages = (stage, pages) => {
         if (pages.length === 0) {
             stage.replaceChildren(element('p', 'index-hover-preview__status', label('labelNoImage')));
@@ -293,29 +302,37 @@
             return;
         }
 
-        const image = element('img', 'index-hover-preview__image');
-        image.alt = '';
+        const current = active.stage === stage ? active.pages[active.page] : undefined;
 
-        const previous = iconButton('index-hover-preview__nav is-previous', 'fa-chevron-left', label('labelPrevious'));
-        previous.setAttribute('data-index-hover-preview-previous', '');
+        if (active.stage !== stage) {
+            const image = element('img', 'index-hover-preview__image');
+            image.alt = '';
 
-        const next = iconButton('index-hover-preview__nav is-next', 'fa-chevron-right', label('labelNext'));
-        next.setAttribute('data-index-hover-preview-next', '');
+            const previous = iconButton('index-hover-preview__nav is-previous', 'fa-chevron-left', label('labelPrevious'));
+            previous.setAttribute('data-index-hover-preview-previous', '');
 
-        const footer = element('div', 'index-hover-preview__footer');
-        footer.append(element('span', 'index-hover-preview__counter'));
+            const next = iconButton('index-hover-preview__nav is-next', 'fa-chevron-right', label('labelNext'));
+            next.setAttribute('data-index-hover-preview-next', '');
 
-        if (pages.length > 1) {
-            footer.append(element('span', 'index-hover-preview__hint', label('labelScroll')));
-        } else {
-            previous.hidden = true;
-            next.hidden = true;
+            const footer = element('div', 'index-hover-preview__footer');
+            footer.append(
+                element('span', 'index-hover-preview__counter'),
+                element('span', 'index-hover-preview__hint', label('labelScroll')),
+            );
+
+            stage.replaceChildren(image, previous, next, footer);
+            active.stage = stage;
         }
 
-        stage.replaceChildren(image, previous, next, footer);
-        active.stage = stage;
+        const single = pages.length === 1;
+        stage.querySelector('[data-index-hover-preview-previous]').hidden = single;
+        stage.querySelector('[data-index-hover-preview-next]').hidden = single;
+        stage.querySelector('.index-hover-preview__hint').hidden = single;
+
         active.pages = pages;
-        showPage(0);
+
+        const kept = pages.indexOf(current);
+        showPage(kept === -1 ? 0 : kept);
     };
 
     const checkImage = (source) => {
@@ -328,27 +345,74 @@
                 imageChecks.delete(imageChecks.keys().next().value);
             }
 
-            imageChecks.set(source, new Promise((resolve) => {
+            const check = new Promise((resolve) => {
                 const loader = new Image();
+                let settled = false;
+                let timer = null;
 
-                loader.addEventListener('load', () => resolve(true), { once: true });
+                const settle = (loaded) => {
+                    if (settled) {
+                        return false;
+                    }
+
+                    settled = true;
+                    window.clearTimeout(timer);
+                    resolve(loaded);
+
+                    return true;
+                };
+
+                loader.addEventListener('load', () => settle(true), { once: true });
                 loader.addEventListener('error', () => {
-                    failedImages.add(source);
-                    resolve(false);
+                    if (settle(false)) {
+                        failedImages.add(source);
+                    }
                 }, { once: true });
 
+                timer = window.setTimeout(() => {
+                    if (settle(false) && imageChecks.get(source) === check) {
+                        imageChecks.delete(source);
+                    }
+                }, IMAGE_CHECK_TIMEOUT_MS);
+
                 loader.src = source;
-            }));
+            });
+
+            imageChecks.set(source, check);
         }
 
         return imageChecks.get(source);
     };
 
-    // Only images that actually load become pages; broken ones are dropped up front.
-    const loadableImages = async (images) => {
-        const results = await Promise.all(images.map(checkImage));
+    // Only images that actually load become pages; broken ones are dropped. Each image joins the
+    // gallery as soon as its own check finishes, so one slow sample never holds back the others.
+    const renderLoadableImages = (stage, images, showToken) => {
+        if (images.length === 0) {
+            renderPages(stage, []);
 
-        return images.filter((source, index) => results[index]);
+            return;
+        }
+
+        const results = images.map(() => false);
+        let pending = images.length;
+
+        images.forEach((source, index) => {
+            checkImage(source).then((loaded) => {
+                results[index] = loaded;
+                pending--;
+
+                if (showToken !== token) {
+                    return;
+                }
+
+                const pages = images.filter((_, position) => results[position]);
+
+                // Keep "Loading preview..." until an image is ready or every check has failed.
+                if (pages.length > 0 || pending === 0) {
+                    renderPages(stage, pages);
+                }
+            });
+        });
     };
 
     const show = async (cover, toggle) => {
@@ -390,13 +454,7 @@
             return;
         }
 
-        const pages = await loadableImages(Array.isArray(data.images) ? data.images : []);
-
-        if (showToken !== token) {
-            return;
-        }
-
-        renderPages(stage, pages);
+        renderLoadableImages(stage, Array.isArray(data.images) ? data.images : [], showToken);
     };
 
     const scheduleShow = (cover) => {
