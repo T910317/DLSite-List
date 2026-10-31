@@ -2,20 +2,32 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock, mock_open, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import asyncio
 from dataclasses import replace
 
-from dlsite_async.work import AgeCategory, BookType, Work, WorkOption, WorkType
+from dlsite_async.work import (
+    AgeCategory,
+    BookType,
+    LanguageEdition,
+    TranslationInfo,
+    Work,
+    WorkOption,
+    WorkType,
+)
 from DLSiteScraper import (
     fill_from_product_api,
     missing_product_api_fields,
     product_api_details,
     product_format_codes,
+    run,
     to_serializable,
 )
+
+
 
 
 class DLSiteScraperProductFormatTest(unittest.TestCase):
@@ -174,17 +186,17 @@ class DLSiteScraperProductApiFallbackTest(unittest.TestCase):
 
     def test_complete_work_reports_nothing_missing(self):
         work = self.aix_work(
-            circle="DIXY",
+            maker_name="DIXY",
             genre=["萌え"],
             sample_images=["//img.dlsite.jp/smp1.jpg"],
         )
 
         self.assertEqual([], missing_product_api_fields(work))
 
-    def test_circle_maker_maps_to_circle(self):
+    def test_circle_maker_name_is_mapped(self):
         self.assertEqual(
             {
-                "circle": "DIXY",
+                "maker_name": "DIXY",
                 "genre": ["萌え", "学生"],
                 "sample_images": [
                     "//img.dlsite.jp/RJ01190426_img_smp1.jpg",
@@ -194,10 +206,12 @@ class DLSiteScraperProductApiFallbackTest(unittest.TestCase):
             product_api_details(AIX_PRODUCT, ["maker", "genre", "sample_images"]),
         )
 
-    def test_non_circle_maker_maps_to_brand(self):
+    def test_brand_maker_name_is_mapped(self):
         product = {**AIX_PRODUCT, "maker_id": "VG01000001", "maker_name": "Brand"}
 
-        self.assertEqual({"brand": "Brand"}, product_api_details(product, ["maker"]))
+        self.assertEqual(
+            {"maker_name": "Brand"}, product_api_details(product, ["maker"])
+        )
 
     def test_only_missing_fields_are_mapped(self):
         self.assertEqual(
@@ -225,7 +239,7 @@ class DLSiteScraperProductApiFallbackTest(unittest.TestCase):
 
     def test_existing_page_values_are_kept(self):
         api = FakeAPI([AIX_PRODUCT])
-        original = self.aix_work(circle="From page", genre=["Page genre"])
+        original = self.aix_work(maker_name="From page", genre=["Page genre"])
 
         work = asyncio.run(fill_from_product_api(api, original))
 
@@ -236,7 +250,7 @@ class DLSiteScraperProductApiFallbackTest(unittest.TestCase):
     def test_complete_work_does_not_call_product_api(self):
         api = FakeAPI([AIX_PRODUCT])
         original = self.aix_work(
-            circle="DIXY",
+            maker_name="DIXY",
             genre=["萌え"],
             sample_images=["//img.dlsite.jp/smp1.jpg"],
         )
@@ -253,6 +267,68 @@ class DLSiteScraperProductApiFallbackTest(unittest.TestCase):
                     original,
                     asyncio.run(fill_from_product_api(FakeAPI(payload), original)),
                 )
+
+
+class DLSiteScraperOutputTest(unittest.TestCase):
+    def test_language_editions_keep_original_work_reference(self):
+        work = SimpleNamespace(
+            language_editions=[
+                LanguageEdition(
+                    workno="RJ01463781",
+                    edition_id=43711,
+                    lang="JPN",
+                    edition_type="language",
+                    label="日本語",
+                    display_order=1,
+                )
+            ]
+        )
+        serialized = to_serializable(work)
+        self.assertEqual(
+            "RJ01463781", serialized["language_editions"][0]["workno"]
+        )
+        self.assertEqual(1, serialized["language_editions"][0]["display_order"])
+        self.assertEqual("JPN", serialized["language_editions"][0]["lang"])
+
+    def test_translation_info_keeps_original_work_reference(self):
+        work = SimpleNamespace(
+            translation_info=TranslationInfo(
+                original_workno="RJ01647180", is_original=False
+            )
+        )
+        serialized = to_serializable(work)
+        self.assertEqual(
+            "RJ01647180", serialized["translation_info"]["original_workno"]
+        )
+        self.assertFalse(serialized["translation_info"]["is_original"])
+
+    def test_output_preserves_serialized_fields_without_fetch_metadata(self):
+        work = SimpleNamespace(
+            product_id="VJ015443", scenario=["天宮りつ"], work_type=WorkType.VOICE_ASMR
+        )
+        expected = to_serializable(work) | {
+            "product_format": product_format_codes(work)
+        }
+        arguments = SimpleNamespace(
+            work_id="VJ015443", json_output="unused/work.json", image_output=None
+        )
+        with (
+            patch(
+                "DLSiteScraper.fetch_work_data", AsyncMock(return_value=(work, work))
+            ),
+            patch("DLSiteScraper.Path.mkdir"),
+            patch("builtins.open", mock_open()),
+            patch("DLSiteScraper.json.dump") as dump,
+        ):
+            manifest = run(arguments)
+        document = dump.call_args.args[0]
+        self.assertEqual({"japanese", "english"}, set(document))
+        for locale in ("japanese", "english"):
+            self.assertEqual(expected, document[locale])
+        self.assertEqual(
+            {"product_id", "json_path", "downloaded_images", "failed_images"},
+            set(manifest),
+        )
 
 
 if __name__ == "__main__":
