@@ -755,6 +755,87 @@ class LibraryTransferImportTest extends TestCase
         $this->archive()->inspect($path, true);
     }
 
+    public function test_import_entry_and_part_byte_budgets_reject_before_upload_is_persisted(): void
+    {
+        $part = $this->exported(['options'])->parts()->firstOrFail();
+        $path = Storage::disk('local')->path($part->path);
+        $inspection = $this->archive()->inspectImport($path);
+
+        foreach ([
+            ['max_entry_expanded_bytes', $inspection['manifest']['entries'][0]['bytes'] - 1, 'ZIP entry exceeds'],
+            ['max_part_compressed_bytes', $inspection['compressed_bytes'] - 1, 'compressed-byte'],
+            ['max_part_expanded_bytes', $inspection['expanded_bytes'] - 1, 'expanded-byte'],
+        ] as [$limit, $maximum, $message]) {
+            $configured = config('transfers.' . $limit);
+            config(['transfers.' . $limit => $maximum]);
+            $run = $this->service()->startImport();
+            try {
+                $this->service()->upload($run, new UploadedFile($path, $part->filename, null, null, true));
+                $this->fail('An over-budget ZIP part must be rejected.');
+            } catch (InvalidArchive $exception) {
+                $this->assertStringContainsString($message, $exception->getMessage());
+            } finally {
+                config(['transfers.' . $limit => $configured]);
+            }
+            $this->assertSame(0, $run->parts()->count());
+            $this->assertSame([], Storage::disk('local')->allFiles($run->directory()));
+        }
+    }
+
+    public function test_multipart_import_persists_and_enforces_the_aggregate_expanded_budget(): void
+    {
+        config(['transfers.fragment_bytes' => 600]);
+        Product::factory()->count(3)->create();
+        $export = $this->service()->export(['works'], 'all', []);
+        $export->update(['settings' => [...$export->settings, 'part_bytes' => 8500]]);
+        $this->planExport($export);
+        foreach ($export->parts()->get() as $part) {
+            $this->archive()->build($part);
+        }
+        $parts = $export->parts()->orderBy('id')->get();
+        $firstInspection = $this->archive()->inspectImport(Storage::disk('local')->path($parts[0]->path));
+        $secondInspection = $this->archive()->inspectImport(Storage::disk('local')->path($parts[1]->path));
+        config(['transfers.max_run_expanded_bytes' => $firstInspection['expanded_bytes'] + $secondInspection['expanded_bytes'] - 1]);
+        $run = $this->service()->startImport();
+
+        $accepted = $this->service()->upload($run, new UploadedFile(Storage::disk('local')->path($parts[0]->path), $parts[0]->filename, null, null, true));
+        $this->assertSame($firstInspection['expanded_bytes'], $accepted->expanded_bytes);
+        try {
+            $this->service()->upload($run->fresh(), new UploadedFile(Storage::disk('local')->path($parts[1]->path), $parts[1]->filename, null, null, true));
+            $this->fail('The aggregate expanded-byte budget must include earlier parts.');
+        } catch (InvalidArchive $exception) {
+            $this->assertStringContainsString('Archive set exceeds the expanded-byte', $exception->getMessage());
+        }
+        $this->assertSame(1, $run->parts()->count());
+    }
+
+    public function test_image_import_enforces_declared_bytes_and_raster_geometry(): void
+    {
+        Product::factory()->create(['id' => 'RJ123456', 'work_image' => 'storage/Works/RJ123456/cover.png']);
+        $this->saveImage('Works/RJ123456/cover.png');
+        $export = $this->exported(['works', 'images']);
+        $image = $export->parts()->where('kind', 'images')->firstOrFail();
+        $imageBytes = $image->manifest['entries'][0]['bytes'];
+        config(['transfers.max_image_bytes' => $imageBytes - 1]);
+        $run = $this->service()->startImport();
+        try {
+            $this->service()->upload($run, new UploadedFile(Storage::disk('local')->path($image->path), $image->filename, null, null, true));
+            $this->fail('An image exceeding its declared-byte budget must be rejected.');
+        } catch (InvalidArchive $exception) {
+            $this->assertStringContainsString('invalid image entry', $exception->getMessage());
+        }
+        $this->assertSame(0, $run->parts()->count());
+
+        config(['transfers.max_image_bytes' => $imageBytes, 'transfers.max_image_pixels' => 50]);
+        $run = $this->service()->startImport();
+        $uploaded = $this->service()->upload($run, new UploadedFile(Storage::disk('local')->path($image->path), $image->filename, null, null, true));
+        $this->service()->inspect($run->fresh(), $uploaded->id);
+
+        $this->assertSame(LibraryTransferPartStatus::Invalid, $uploaded->fresh()->status);
+        $this->assertStringContainsString('Invalid image content', $uploaded->fresh()->error);
+        $this->assertSame([], Storage::disk('local')->allFiles($run->directory() . '/staged'));
+    }
+
     public function test_missing_data_cannot_be_bypassed_and_later_reverse_order_uploads_complete(): void
     {
         config(['transfers.fragment_bytes' => 600]);
@@ -840,10 +921,12 @@ class LibraryTransferImportTest extends TestCase
             null,
             true,
         ));
+        $replacementExpandedBytes = $replacement->candidate['expanded_bytes'];
         $this->service()->inspect($run->fresh(), $replacement->id, $replacement->candidate['path']);
 
         $this->assertSame(LibraryTransferPartStatus::Valid, $invalid->fresh()->status);
         $this->assertNull($invalid->fresh()->candidate);
+        $this->assertSame($replacementExpandedBytes, $invalid->fresh()->expanded_bytes);
         $this->assertSame($validDataId, $run->parts()->where('kind', 'data')->firstOrFail()->id);
         $this->assertSame(LibraryTransferRunStatus::Analyzing, $run->fresh()->status);
     }

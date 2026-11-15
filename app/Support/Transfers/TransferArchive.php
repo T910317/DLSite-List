@@ -662,8 +662,31 @@ final class TransferArchive
 
     public function inspect(string $path, bool $verify = false, ?string $stage = null): array
     {
+        return $this->inspectArchive($path, $verify, $stage, $stage !== null)['manifest'];
+    }
+
+    /**
+     * @return array{manifest: array, compressed_bytes: int, expanded_bytes: int}
+     */
+    public function inspectImport(string $path, bool $verify = false, ?string $stage = null): array
+    {
+        return $this->inspectArchive($path, $verify, $stage, true);
+    }
+
+    /**
+     * @return array{manifest: array, compressed_bytes: int, expanded_bytes: int}
+     */
+    private function inspectArchive(string $path, bool $verify, ?string $stage, bool $import): array
+    {
         if (! class_exists(ZipArchive::class)) {
             throw new RuntimeException('Enable the PHP zip extension before importing.');
+        }
+        $compressedBytes = filesize($path);
+        if ($compressedBytes === false) {
+            throw new RuntimeException('Unable to read ZIP archive size.');
+        }
+        if ($import && $compressedBytes > config('transfers.max_part_compressed_bytes')) {
+            throw new InvalidArchive('ZIP part exceeds the compressed-byte safety limit.');
         }
         $zip = new ZipArchive;
         if ($zip->open($path, ZipArchive::RDONLY) !== true) {
@@ -675,7 +698,7 @@ final class TransferArchive
                 throw new InvalidArchive('Missing or oversized manifest / too many ZIP entries.');
             }
             $manifest = self::decode($zip->getFromName('manifest.json'));
-            $this->validateManifest($manifest);
+            $this->validateManifest($manifest, $import);
             $declared = ['manifest.json' => true];
             foreach ($manifest['entries'] as $entry) {
                 if (isset($declared[$entry['path']])) {
@@ -692,11 +715,17 @@ final class TransferArchive
                 if (! isset($declared[$name]) || isset($seen[$name]) || (($attributes >> 16) & 0170000) === 0120000 || ($entry['encryption_method'] ?? 0) !== 0 || config('transfers.max_compression_ratio') < $entry['size'] / max(1, $entry['comp_size'])) {
                     throw new InvalidArchive('Unsafe, duplicate, encrypted or undeclared ZIP entry: ' . $name);
                 }
+                if ($import && ($entry['comp_size'] > config('transfers.max_entry_compressed_bytes') || $entry['size'] > config('transfers.max_entry_expanded_bytes'))) {
+                    throw new InvalidArchive('ZIP entry exceeds the compressed or expanded-byte safety limit: ' . $name);
+                }
                 $seen[$name] = true;
                 if ($entry['size'] > PHP_INT_MAX - $expanded) {
                     throw new InvalidArchive('Expanded archive size exceeds supported limits.');
                 }
                 $expanded += $entry['size'];
+                if ($import && $expanded > config('transfers.max_part_expanded_bytes')) {
+                    throw new InvalidArchive('ZIP part exceeds the expanded-byte safety limit.');
+                }
             }
             if (count($seen) !== count($declared)) {
                 throw new InvalidArchive('Declared ZIP entries are missing.');
@@ -757,7 +786,7 @@ final class TransferArchive
                     throw new InvalidArchive('Entry checksum mismatch: ' . $entry['path']);
                 }
                 if ($temporary !== null && $target !== null) {
-                    if ($manifest['part']['kind'] === 'images' && ((new \finfo(FILEINFO_MIME_TYPE))->file($temporary) !== $entry['media_type'] || @getimagesize($temporary) === false)) {
+                    if ($manifest['part']['kind'] === 'images' && ! $this->validStagedImage($temporary, $entry['media_type'])) {
                         throw new InvalidArchive('Invalid image content: ' . $entry['path']);
                     }
                     if (! rename($temporary, Storage::disk('local')->path($target))) {
@@ -766,7 +795,11 @@ final class TransferArchive
                 }
             }
 
-            return $manifest;
+            return [
+                'manifest' => $manifest,
+                'compressed_bytes' => $compressedBytes,
+                'expanded_bytes' => $expanded,
+            ];
         } catch (ValidationException $exception) {
             throw new InvalidArchive($exception->getMessage(), previous: $exception);
         } finally {
@@ -791,7 +824,7 @@ final class TransferArchive
         return $decoded;
     }
 
-    private function validateManifest(array $manifest): void
+    private function validateManifest(array $manifest, bool $import): void
     {
         Validator::make($manifest, $this->rules(), $this->messages())->validate();
         $kind = $manifest['part']['kind'];
@@ -809,7 +842,7 @@ final class TransferArchive
             throw new InvalidArchive('Unsupported or invalid archive layout: missing work entry format.');
         }
         foreach ($manifest['entries'] as $entry) {
-            $this->validateManifestEntry($entry, $kind, $manifest['scopes'], $manifest['schema_version']);
+            $this->validateManifestEntry($entry, $kind, $manifest['scopes'], $manifest['schema_version'], $import);
         }
     }
 
@@ -875,7 +908,7 @@ final class TransferArchive
         ];
     }
 
-    private function validateManifestEntry(array $entry, string $kind, array $scopes, int $version): void
+    private function validateManifestEntry(array $entry, string $kind, array $scopes, int $version, bool $import): void
     {
         if ($kind === 'data') {
             $section = $entry['section'] ?? null;
@@ -892,7 +925,10 @@ final class TransferArchive
             return;
         }
 
-        if (! in_array('images', $scopes, true) || ! self::validImageEntry($entry, $version)) {
+        if (
+            ! in_array('images', $scopes, true) || ! self::validImageEntry($entry, $version)
+            || ($import && ($entry['bytes'] ?? PHP_INT_MAX) > config('transfers.max_image_bytes'))
+        ) {
             throw new InvalidArchive('Unsupported or invalid archive layout: invalid image entry.');
         }
     }
@@ -963,13 +999,47 @@ final class TransferArchive
         return true;
     }
 
+    private function validStagedImage(string $path, string $mediaType): bool
+    {
+        if ((new \finfo(FILEINFO_MIME_TYPE))->file($path) !== $mediaType) {
+            return false;
+        }
+        $dimensions = @getimagesize($path);
+        if (! is_array($dimensions)) {
+            return false;
+        }
+        [$width, $height] = $dimensions;
+        $maximumDimension = config('transfers.max_image_dimension');
+        $maximumPixels = config('transfers.max_image_pixels');
+
+        return $width > 0 && $height > 0
+            && $width <= $maximumDimension && $height <= $maximumDimension
+            && $width <= intdiv($maximumPixels, $height);
+    }
+
+    public static function manifestExpandedBytes(array $manifest): int
+    {
+        $json = json_encode($manifest, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $expanded = strlen($json);
+        foreach ($manifest['entries'] ?? [] as $entry) {
+            $bytes = $entry['bytes'] ?? null;
+            if (! is_int($bytes) || $bytes < 0 || $bytes > PHP_INT_MAX - $expanded) {
+                throw new InvalidArchive('Expanded archive size exceeds supported limits.');
+            }
+            $expanded += $bytes;
+        }
+
+        return $expanded;
+    }
+
     public static function space(int $bytes, string $directory): void
     {
         while (! is_dir($directory) && dirname($directory) !== $directory) {
             $directory = dirname($directory);
         }
         $free = disk_free_space($directory);
-        if ($free !== false && $free < $bytes + config('transfers.disk_reserve_bytes')) {
+        $reserve = config('transfers.disk_reserve_bytes');
+        if ($bytes > PHP_INT_MAX - $reserve || ($free !== false && $free < $bytes + $reserve)) {
             throw new RuntimeException('Not enough free disk space for this transfer.');
         }
     }

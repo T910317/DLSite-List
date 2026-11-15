@@ -20,6 +20,7 @@ class LibraryTransferPart extends Model
         'manifest' => 'array',
         'candidate' => 'array',
         'bytes' => 'integer',
+        'expanded_bytes' => 'integer',
         'validation_token' => 'integer',
         'number' => 'integer',
         'entry_count' => 'integer',
