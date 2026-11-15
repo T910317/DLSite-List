@@ -391,6 +391,25 @@ class FullRefetchTest extends TestCase
         );
     }
 
+    public function test_fetch_rejects_unsafe_persisted_product_id_before_resolving_storage_paths(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        Process::fake()->preventStrayProcesses();
+        $product = Product::factory()->create(['id' => '../../outside']);
+        $run = app(RefetchService::class)->createRun([$product->id], false);
+        $result = $run->results()->firstOrFail();
+
+        app(RefetchService::class)->fetchAndRecordResult($result);
+
+        $this->assertTrue($result->refresh()->isFailed());
+        $this->assertSame(
+            'Refetch cannot stage a work with an invalid product code.',
+            $result->error,
+        );
+        Process::assertNothingRan();
+    }
+
     public function test_image_failures_keep_metadata_reviewable_and_disable_only_failed_image_categories(): void
     {
         Storage::fake('local');

@@ -4,6 +4,7 @@ namespace App\Support\DLSite;
 
 use App\Enums\ProductContributorRole;
 use App\Enums\ProductFormat;
+use App\Models\Product;
 
 final readonly class DLSiteWorkData
 {
@@ -33,10 +34,15 @@ final readonly class DLSiteWorkData
     {
         $japanese = is_array($workData['japanese'] ?? null) ? $workData['japanese'] : [];
         $english = is_array($workData['english'] ?? null) ? $workData['english'] : [];
-        $productId = self::text($japanese['product_id'] ?? $english['product_id'] ?? $fallbackProductId);
+        $productId = self::text($fallbackProductId)
+            ?? self::text($japanese['product_id'] ?? $english['product_id'] ?? null);
 
         if ($productId === null) {
             throw new \InvalidArgumentException('DLsite work data is missing a product id.');
+        }
+
+        if (Product::codeNumberFromId($productId) === null) {
+            throw new \InvalidArgumentException('DLsite work data contains an invalid product id.');
         }
 
         $workName = self::text($japanese['work_name'] ?? null);
