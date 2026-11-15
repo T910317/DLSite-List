@@ -109,9 +109,13 @@
             <label class="widget-header" for="filter_tags">{{ __('Tags') }}</label>
             <div class="filter-field-stack">
                 <textarea id="filter_tags" name="tags" rows="3" wire:model="draft.tags"
+                    maxlength="{{ \App\Support\ProductIndexFilters::MAX_TAG_INPUT_LENGTH }}"
                     placeholder="{{ __('Comma-separated. Use double quotes for tags that contain commas, e.g. "Junior / Senior (at work, school, etc)", Office Lady') }}"
                     data-autocomplete-source="tags" data-autocomplete-mode="csv"
                     data-autocomplete-url="{{ route('autocomplete.tags', [], false) }}"></textarea>
+                @error('tags')
+                    <div class="text-error">{{ $message }}</div>
+                @enderror
                 <x-index.segmented-radio-group name="tag_match" :options="$filterOptions['tag_match']" wire:model="draft.tag_match" />
             </div>
         </div>

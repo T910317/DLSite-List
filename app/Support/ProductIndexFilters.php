@@ -12,9 +12,16 @@ use App\Enums\ProductReListenValue;
 use App\Enums\ProductScore;
 use BackedEnum;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 final readonly class ProductIndexFilters
 {
+    public const MAX_TAG_INPUT_LENGTH = 2048;
+
+    public const MAX_TAGS = 20;
+
+    public const MAX_TAG_LENGTH = 255;
+
     // All Index filter and sort keys accepted from the URL and mirrored by the Livewire component.
     public const INPUT_KEYS = [
         'search',
@@ -133,7 +140,8 @@ final readonly class ProductIndexFilters
 
     public static function fromQuery(array $query): self
     {
-        $tags = self::normalizeText($query['tags'] ?? null);
+        $tags = self::normalizeTagInput($query['tags'] ?? null);
+        self::parseTags($tags);
         $primarySort = self::normalizeSort(
             self::normalizeEnum($query['sort_first_field'] ?? null, ProductIndexSortField::class),
             self::normalizeEnum($query['sort_first_direction'] ?? null, ProductIndexSortDirection::class),
@@ -225,7 +233,7 @@ final readonly class ProductIndexFilters
 
     public function parsedTags(): array
     {
-        return TagInput::parse($this->tags);
+        return self::parseTags($this->tags);
     }
 
     public function resolvedTagMatch(): ProductIndexTagMatch
@@ -304,6 +312,61 @@ final readonly class ProductIndexFilters
     private static function normalizeText(mixed $value): string
     {
         return is_scalar($value) ? trim((string) $value) : '';
+    }
+
+    private static function normalizeTagInput(mixed $value): string
+    {
+        if (! is_scalar($value)) {
+            return '';
+        }
+
+        $value = (string) $value;
+        self::ensureTagInputLength($value);
+
+        return trim($value);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function parseTags(string $value): array
+    {
+        self::ensureTagInputLength($value);
+
+        $tags = TagInput::parse($value);
+
+        if (count($tags) > self::MAX_TAGS) {
+            throw ValidationException::withMessages([
+                'tags' => __('The tag filter may contain at most :max tags.', [
+                    'max' => self::MAX_TAGS,
+                ]),
+            ]);
+        }
+
+        foreach ($tags as $tag) {
+            if (mb_strlen($tag) > self::MAX_TAG_LENGTH) {
+                throw ValidationException::withMessages([
+                    'tags' => __('Each tag may not exceed :max characters.', [
+                        'max' => self::MAX_TAG_LENGTH,
+                    ]),
+                ]);
+            }
+        }
+
+        return $tags;
+    }
+
+    private static function ensureTagInputLength(string $value): void
+    {
+        if (mb_strlen($value) <= self::MAX_TAG_INPUT_LENGTH) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'tags' => __('The tag filter may not exceed :max characters.', [
+                'max' => self::MAX_TAG_INPUT_LENGTH,
+            ]),
+        ]);
     }
 
     private static function normalizeNonNegativeInteger(mixed $value): ?int

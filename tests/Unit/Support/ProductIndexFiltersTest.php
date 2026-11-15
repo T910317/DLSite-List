@@ -8,6 +8,7 @@ use App\Enums\ProductIndexTagMatch;
 use App\Enums\ProductPriority;
 use App\Enums\ProductProgress;
 use App\Support\ProductIndexFilters;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ProductIndexFiltersTest extends TestCase
@@ -35,6 +36,33 @@ class ProductIndexFiltersTest extends TestCase
         $this->assertSame(ProductIndexSortField::Score, $filters->primarySort?->field);
         $this->assertSame(ProductIndexSortDirection::Desc, $filters->primarySort?->direction);
         $this->assertNull($filters->secondarySort);
+    }
+
+    public function test_it_rejects_an_oversized_tag_filter_before_parsing(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        ProductIndexFilters::fromQuery([
+            'tags' => str_repeat(' ', ProductIndexFilters::MAX_TAG_INPUT_LENGTH + 1),
+        ]);
+    }
+
+    public function test_it_rejects_too_many_tag_filter_items(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        ProductIndexFilters::fromQuery([
+            'tags' => implode(',', range(1, ProductIndexFilters::MAX_TAGS + 1)),
+        ]);
+    }
+
+    public function test_it_rejects_an_oversized_individual_tag(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        ProductIndexFilters::fromQuery([
+            'tags' => str_repeat('a', ProductIndexFilters::MAX_TAG_LENGTH + 1),
+        ]);
     }
 
     public function test_it_drops_invalid_values_from_query_output(): void
