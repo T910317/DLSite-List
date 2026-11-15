@@ -1,17 +1,21 @@
 import asyncio
 import argparse
+import ipaddress
 import json
 import logging
 import os
 import re
+import socket
 import sys
 from enum import Enum
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from dlsite_async import DlsiteAPI
 from dlsite_async.work import WorkOption, WorkType
 from PIL import Image
+from requests.adapters import HTTPAdapter
 
 from weekly_logging import WeeklyFileHandler
 
@@ -26,6 +30,24 @@ MIRRORED_PRODUCT_FORMAT_OPTIONS = {
     WorkOption.MUSIC: WorkType.MUSIC,
     WorkOption.VIDEO: WorkType.VIDEO,
 }
+
+ALLOWED_IMAGE_HOSTS = frozenset({"img.dlsite.jp", "www.dlsite.com"})
+
+
+class PinnedHTTPSAdapter(HTTPAdapter):
+    def __init__(self, server_hostname):
+        self.server_hostname = server_hostname
+        super().__init__()
+
+    def init_poolmanager(self, connections, maxsize, block=False, **pool_kwargs):
+        pool_kwargs["assert_hostname"] = self.server_hostname
+        pool_kwargs["server_hostname"] = self.server_hostname
+        return super().init_poolmanager(
+            connections,
+            maxsize,
+            block=block,
+            **pool_kwargs,
+        )
 
 
 def parse_arguments(argv=None):
@@ -110,13 +132,102 @@ async def fetch_work_data(work_id):
     return japanese, english
 
 
-def download_image(url, save_path):
-    # Fix protocol-relative URLs
+def validated_image_target(url):
+    if not isinstance(url, str):
+        raise ValueError("Image URL must be a string")
+
     if url.startswith("//"):
         url = "https:" + url
     elif url.startswith("/"):
         url = "https://www.dlsite.com" + url
 
+    parsed = urlsplit(url)
+
+    try:
+        port = parsed.port
+    except ValueError as error:
+        raise ValueError("Image URL has an invalid port") from error
+
+    hostname = parsed.hostname
+    if parsed.scheme != "https":
+        raise ValueError("Image URL must use HTTPS")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("Image URL must not include credentials")
+    if hostname not in ALLOWED_IMAGE_HOSTS:
+        raise ValueError("Image URL host is not allowed")
+    if port not in (None, 443):
+        raise ValueError("Image URL must use port 443")
+
+    addresses = []
+    for family, _, _, _, socket_address in socket.getaddrinfo(
+        hostname,
+        443,
+        type=socket.SOCK_STREAM,
+    ):
+        if family not in (socket.AF_INET, socket.AF_INET6):
+            continue
+
+        address = ipaddress.ip_address(socket_address[0].split("%", 1)[0])
+        if not address.is_global:
+            raise ValueError("Image URL resolved to a non-public address")
+
+        canonical_address = str(address)
+        if canonical_address not in addresses:
+            addresses.append(canonical_address)
+
+    if not addresses:
+        raise ValueError("Image URL did not resolve to a public address")
+
+    return parsed, hostname, addresses
+
+
+def pinned_image_url(parsed, address):
+    ip_address = ipaddress.ip_address(address)
+    network_location = f"[{ip_address}]" if ip_address.version == 6 else str(ip_address)
+    return urlunsplit(
+        ("https", network_location, parsed.path or "/", parsed.query, "")
+    )
+
+
+def request_image(url, headers):
+    parsed, hostname, addresses = validated_image_target(url)
+    request_headers = {**headers, "Host": hostname}
+    last_error = None
+
+    for address in addresses:
+        session = requests.Session()
+        # A direct connection ensures the validated address is the actual peer.
+        session.trust_env = False
+        session.mount("https://", PinnedHTTPSAdapter(hostname))
+        response = None
+
+        try:
+            response = session.get(
+                pinned_image_url(parsed, address),
+                stream=True,
+                timeout=15,
+                headers=request_headers,
+                allow_redirects=False,
+            )
+            if 300 <= response.status_code < 400:
+                raise requests.TooManyRedirects("Image redirects are not allowed")
+            response.raise_for_status()
+            return session, response
+        except (requests.ConnectionError, requests.Timeout) as error:
+            if response is not None:
+                response.close()
+            session.close()
+            last_error = error
+        except Exception:
+            if response is not None:
+                response.close()
+            session.close()
+            raise
+
+    raise last_error
+
+
+def download_image(url, save_path):
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -126,11 +237,12 @@ def download_image(url, save_path):
     }
 
     temporary_path = save_path.with_name(f"{save_path.name}.part")
+    session = None
+    response = None
 
     try:
         logging.debug(f"Downloading {url}")
-        response = requests.get(url, stream=True, timeout=15, headers=headers)
-        response.raise_for_status()
+        session, response = request_image(url, headers)
 
         save_path.parent.mkdir(parents=True, exist_ok=True)
         with open(temporary_path, "wb") as file:
@@ -156,6 +268,11 @@ def download_image(url, save_path):
             temporary_path.unlink()
         logging.warning(f"Download failed for {url}: {error}")
         return False
+    finally:
+        if response is not None:
+            response.close()
+        if session is not None:
+            session.close()
 
 
 def map_known_error(error_message: str, work_id: str):
