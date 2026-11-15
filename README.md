@@ -57,6 +57,7 @@ docker compose -f oci://ghcr.io/arednel/dlsite-list:latest up -d -y
 
 - DLSite List is available at: `http://localhost:8080`
 - Authentication is disabled by default. To add username and password, open `Options -> Authentication` and turn on `Require administrator login`.
+- Docker binds this HTTP endpoint to the host's IPv4 loopback interface by default. For access from another machine, enable authentication and place an HTTPS reverse proxy in front of the loopback endpoint; do not publish the application port directly to the network.
 
 ## Manual Installation Process
 

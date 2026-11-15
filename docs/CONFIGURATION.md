@@ -56,6 +56,8 @@ docker compose --env-file docker/.env.docker -f compose.dev.yaml up --build -d
 
 Local builds use the `dlsite-list-dev` Compose project name by default, keeping their containers, volumes, and other Docker resources separate from the published `dlsite-list` installation.
 
+Both Docker configurations publish Nginx only on the host's IPv4 loopback interface by default. This keeps the HTTP-only endpoint unavailable to other machines while preserving access at `http://localhost:8080`. For remote access, first enable administrator authentication, then configure an HTTPS reverse proxy on the Docker host to forward to `http://127.0.0.1:8080`. Keep the application port loopback-bound so credentials, sessions, and unauthenticated local mode are not exposed directly to the network.
+
 The test database/services are behind the Compose `test` profile and do not start with the normal application command.
 
 Docker accepts individual Import / Export ZIP files up to 256 MiB by default. PHP uses `upload_max_filesize = 256M` and `post_max_size = 260M`, while Nginx uses `client_max_body_size 260M`. If larger import files are needed, raise the PHP and Nginx limits together and keep the request/post limit above the file-size limit.
