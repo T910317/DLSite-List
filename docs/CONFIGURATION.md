@@ -11,7 +11,13 @@ For test setup, commands, and the current tests, see [TESTING.md](TESTING.md).
 
 Docker is the recommended self-hosted setup.
 
-Requires [Docker Engine 26.0+](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose).
+Requires [Docker Engine 28.3.3 or newer](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose). Older Docker Engine versions are not supported and must be upgraded before starting the application. This requirement is not checked automatically; check the Engine server version on the Docker host with:
+
+```bash
+docker version --format '{{.Server.Version}}'
+```
+
+This minimum includes Docker's fixes for [older loopback port publishing behavior](https://docs.docker.com/engine/network/port-publishing/) and the [firewalld reload issue](https://github.com/moby/moby/security/advisories/GHSA-x4rx-4gw3-53p4). Network isolation still depends on the host's firewall and routing configuration.
 
 #### Published Docker Installation
 

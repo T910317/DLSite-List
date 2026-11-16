@@ -45,7 +45,15 @@ It supports DLsite works with RJ, BJ, and VJ codes - Voice / ASMR, Games, Manga,
   <a href="docs/screenshots/tag-library_1.png" target="_blank"><img src="docs/screenshots/tag-library_1.png" alt="Tag Library" width="31%"></a>
 </p>
 
-## Quick Start (requires [Docker Compose 2.34.0+](https://docs.docker.com/compose))
+## Quick Start
+
+Requires [Docker Engine 28.3.3 or newer](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose). Older Docker Engine versions are not supported.
+
+This requirement is not checked automatically. Before starting, check the Engine server version on the Docker host and upgrade it if necessary:
+
+```bash
+docker version --format '{{.Server.Version}}'
+```
 
 ### 1) Run this command
 
