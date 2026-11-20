@@ -2518,6 +2518,78 @@ class ProductIndexLivewireTest extends TestCase
             ->assertDontSee('QUERY_HIDDEN');
     }
 
+    public function test_all_tag_filter_requires_every_exact_tag_while_any_accepts_either(): void
+    {
+        Option::setIndexPerPage(Option::INDEX_PER_PAGE_UNLIMITED);
+
+        $alpha = Genre::query()->create(['title' => 'TAG_FILTER_ALPHA']);
+        $beta = Genre::query()->create(['title' => 'TAG_FILTER_BETA']);
+        $both = $this->createProduct(1, ['work_name' => 'TAG_FILTER_BOTH_WORK']);
+        $partial = $this->createProduct(2, ['work_name' => 'TAG_FILTER_PARTIAL_WORK']);
+
+        app(ProductGenreSync::class)->syncCustom($both, [$alpha->getKey(), $beta->getKey()]);
+        app(ProductGenreSync::class)->syncCustom($partial, [$alpha->getKey()]);
+
+        Livewire::withQueryParams([
+            'tags' => 'tag_filter_alpha, tag_filter_beta',
+            'tag_match' => 'all',
+        ])->test(ProductIndex::class)
+            ->assertSee('TAG_FILTER_BOTH_WORK')
+            ->assertDontSee('TAG_FILTER_PARTIAL_WORK');
+
+        Livewire::withQueryParams([
+            'tags' => 'tag_filter_alpha, tag_filter_beta',
+            'tag_match' => 'any',
+        ])->test(ProductIndex::class)
+            ->assertSee('TAG_FILTER_BOTH_WORK')
+            ->assertSee('TAG_FILTER_PARTIAL_WORK');
+    }
+
+    public function test_all_tag_filter_query_count_is_constant_at_the_input_limit(): void
+    {
+        $results = app(ProductIndexResults::class);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $results->getProducts(
+            ProductIndexFilters::fromQuery(['tags' => 'tag_1']),
+            Option::INDEX_PER_PAGE_UNLIMITED,
+            [],
+            fetchedLanguage: Genre::LANGUAGE_ENGLISH,
+        );
+        $singleTagQueryCount = count(DB::getQueryLog());
+
+        DB::flushQueryLog();
+
+        $results->getProducts(
+            ProductIndexFilters::fromQuery([
+                'tags' => implode(',', array_map(
+                    fn(int $tag): string => "tag_{$tag}",
+                    range(1, ProductIndexFilters::MAX_TAGS),
+                )),
+            ]),
+            Option::INDEX_PER_PAGE_UNLIMITED,
+            [],
+            fetchedLanguage: Genre::LANGUAGE_ENGLISH,
+        );
+        $maximumTagQueryCount = count(DB::getQueryLog());
+
+        DB::disableQueryLog();
+
+        $this->assertSame(1, $singleTagQueryCount);
+        $this->assertSame($singleTagQueryCount, $maximumTagQueryCount);
+    }
+
+    public function test_oversized_livewire_tag_draft_is_rejected_without_becoming_active(): void
+    {
+        Livewire::test(ProductIndex::class)
+            ->set('draft.tags', str_repeat('a', ProductIndexFilters::MAX_TAG_INPUT_LENGTH + 1))
+            ->call('applyFilters')
+            ->assertHasErrors('tags')
+            ->assertSet('tags', '');
+    }
+
     public function test_filter_layout_can_hide_fixed_filter_widgets_without_disabling_url_filters(): void
     {
         $this->createProduct(1, ['work_name' => 'FILTER_LAYOUT_HIDDEN']);

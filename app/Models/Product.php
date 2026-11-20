@@ -368,39 +368,27 @@ class Product extends Model
         }
 
         $normalizedTags = collect($tags)
-            ->map(fn(string $tag) => mb_strtolower($tag))
+            ->map(fn(string $tag) => Genre::titleKey($tag))
             ->unique()
             ->values()
             ->all();
 
         if ($tagMatch === ProductIndexTagMatch::All) {
-            foreach ($normalizedTags as $tag) {
-                // Resolve titles once so product queries only filter indexed attachments.
-                $genreIds = Genre::query()->whereLike('title', $tag)->pluck('id');
-
-                $query->whereIn($query->qualifyColumn('id'), function (QueryBuilder $attachmentQuery) use ($genreIds, $fetchedLanguage): void {
-                    $attachmentQuery->select('genre_product.product_id')
-                        ->from('genre_product')
-                        ->whereIn('genre_product.genre_id', $genreIds)
-                        ->where(VisibleGenreAttachment::query($fetchedLanguage));
-                });
-            }
+            $query->whereIn($query->qualifyColumn('id'), function (QueryBuilder $attachmentQuery) use ($normalizedTags, $fetchedLanguage): void {
+                $attachmentQuery->select('genre_product.product_id')
+                    ->from('genre_product')
+                    ->join('genres', 'genres.id', '=', 'genre_product.genre_id')
+                    ->whereIn('genres.title_key', $normalizedTags)
+                    ->where(VisibleGenreAttachment::query($fetchedLanguage))
+                    ->groupBy('genre_product.product_id')
+                    ->havingRaw('COUNT(DISTINCT genre_product.genre_id) = ?', [count($normalizedTags)]);
+            });
 
             return;
         }
 
         $query->whereHas('genres', function (Builder $genreQuery) use ($normalizedTags, $fetchedLanguage): void {
-            $genreQuery->where(function (Builder $tagQuery) use ($normalizedTags): void {
-                foreach ($normalizedTags as $index => $tag) {
-                    if ($index === 0) {
-                        $tagQuery->whereLike('title', $tag);
-
-                        continue;
-                    }
-
-                    $tagQuery->orWhereLike('title', $tag);
-                }
-            });
+            $genreQuery->whereIn('genres.title_key', $normalizedTags);
             $genreQuery->where(VisibleGenreAttachment::query($fetchedLanguage));
         });
     }
