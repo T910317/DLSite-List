@@ -136,13 +136,13 @@ final class RefetchService
         }
 
         $run = $result->run()->firstOrFail();
-        $stagedWorkPath = $this->stagedWorkPath($run, $result->product_id);
-        $jsonPath = "{$stagedWorkPath}.json";
-        $imageDirectory = $run->check_images
-            ? $stagedWorkPath
-            : null;
 
         try {
+            $stagedWorkPath = $this->stagedWorkPath($run, $result->product_id);
+            $jsonPath = "{$stagedWorkPath}.json";
+            $imageDirectory = $run->check_images
+                ? $stagedWorkPath
+                : null;
             $fetch = $this->fetcher->fetch(
                 $result->product_id,
                 Storage::disk('local')->path($jsonPath),
@@ -716,6 +716,10 @@ final class RefetchService
 
     private function stagedWorkPath(RefetchRun $run, string $productId): string
     {
+        if (Product::codeNumberFromId($productId) === null) {
+            throw new RuntimeException('Refetch cannot stage a work with an invalid product code.');
+        }
+
         return "Refetch/{$run->getKey()}/Works/{$productId}";
     }
 

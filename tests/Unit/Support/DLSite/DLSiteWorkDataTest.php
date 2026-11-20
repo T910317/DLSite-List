@@ -167,6 +167,27 @@ class DLSiteWorkDataTest extends TestCase
         $this->assertSame('Fallback Title', $data->workName);
     }
 
+    public function test_requested_product_id_remains_authoritative_over_returned_metadata(): void
+    {
+        foreach (['../../outside', '..\\..\\outside', 'RJ123456/../outside', 'BJ123456'] as $returnedProductId) {
+            $data = DLSiteWorkData::fromArray([
+                'japanese' => ['product_id' => $returnedProductId],
+            ], 'RJ999999');
+
+            $this->assertSame('RJ999999', $data->productId);
+        }
+    }
+
+    public function test_it_rejects_an_invalid_returned_product_id_without_a_requested_id(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('DLsite work data contains an invalid product id.');
+
+        DLSiteWorkData::fromArray([
+            'japanese' => ['product_id' => '../../outside'],
+        ]);
+    }
+
     public function test_it_throws_when_product_id_and_fallback_are_missing(): void
     {
         $this->expectException(\InvalidArgumentException::class);
