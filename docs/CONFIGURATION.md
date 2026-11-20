@@ -11,7 +11,13 @@ For test setup, commands, and the current tests, see [TESTING.md](TESTING.md).
 
 Docker is the recommended self-hosted setup.
 
-Requires [Docker Engine 26.0+](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose).
+Requires [Docker Engine 28.3.3 or newer](https://docs.docker.com/engine) and [Docker Compose 2.34.0+](https://docs.docker.com/compose). Older Docker Engine versions are not supported and must be upgraded before starting the application. This requirement is not checked automatically; check the Engine server version on the Docker host with:
+
+```bash
+docker version --format '{{.Server.Version}}'
+```
+
+This minimum includes Docker's fixes for [older loopback port publishing behavior](https://docs.docker.com/engine/network/port-publishing/) and the [firewalld reload issue](https://github.com/moby/moby/security/advisories/GHSA-x4rx-4gw3-53p4). Network isolation still depends on the host's firewall and routing configuration.
 
 #### Published Docker Installation
 
@@ -55,6 +61,8 @@ docker compose --env-file docker/.env.docker -f compose.dev.yaml up --build -d
 `compose.dev.yaml` is used for local Docker builds from the checked-out source. It builds the application and web server images from `docker/app.dockerfile` and `docker/web.dockerfile`, and reads local Docker settings from `docker/.env.docker`.
 
 Local builds use the `dlsite-list-dev` Compose project name by default, keeping their containers, volumes, and other Docker resources separate from the published `dlsite-list` installation.
+
+Both Docker configurations publish Nginx only on the host's IPv4 loopback interface by default. This keeps the HTTP-only endpoint unavailable to other machines while preserving access at `http://localhost:8080`. For remote access, first enable administrator authentication, then configure an HTTPS reverse proxy on the Docker host to forward to `http://127.0.0.1:8080`. Keep the application port loopback-bound so credentials, sessions, and unauthenticated local mode are not exposed directly to the network.
 
 The test database/services are behind the Compose `test` profile and do not start with the normal application command.
 
