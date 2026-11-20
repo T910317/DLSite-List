@@ -31,8 +31,31 @@ return [
     // Maximum ZIP parts per transfer.
     'max_parts' => 10000,
 
+    // Maximum compressed bytes in one imported ZIP entry.
+    'max_entry_compressed_bytes' => 64 * 1024 * 1024,
+
+    // Maximum expanded bytes in one imported ZIP entry.
+    'max_entry_expanded_bytes' => 64 * 1024 * 1024,
+
+    // Maximum compressed bytes in one imported ZIP part.
+    'max_part_compressed_bytes' => 256 * 1024 * 1024,
+
+    // Maximum expanded bytes in one imported ZIP part.
+    'max_part_expanded_bytes' => 512 * 1024 * 1024,
+
+    // Maximum compressed bytes across an imported archive set.
+    'max_run_compressed_bytes' => 2 * 1024 * 1024 * 1024,
+
+    // Maximum expanded bytes across an imported archive set.
+    'max_run_expanded_bytes' => 4 * 1024 * 1024 * 1024,
+
+    // Maximum imported raster image size and dimensions.
+    'max_image_bytes' => 64 * 1024 * 1024,
+    'max_image_dimension' => 16384,
+    'max_image_pixels' => 100000000,
+
     // Maximum allowed ZIP compression ratio.
-    'max_compression_ratio' => 1000,
+    'max_compression_ratio' => 200,
 
     // Minimum free disk reserve in bytes.
     'disk_reserve_bytes' => 64 * 1024 * 1024,
